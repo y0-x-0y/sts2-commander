@@ -8,7 +8,9 @@ import os
 import shutil
 import subprocess
 
-from overlay.constants import LLM_CLI, SYSTEM_PROMPT_FILE
+from overlay.constants import LLM_CLI, _proj
+
+SYSTEM_PROMPT_FILE = _proj("docs", "system_prompt.txt")
 
 
 class LLMClient:

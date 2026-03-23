@@ -40,10 +40,67 @@
 
 ---
 
-## Quick Start
+## Prerequisites
+
+This overlay reads game state through a mod that exposes a localhost REST API. You need:
+
+- **Python 3.9+**
+- **Slay the Spire 2** with the [STS2 MCP mod](https://github.com/Gennadiyev/STS2MCP) installed
+- **Claude CLI** (or another LLM CLI) for strategy analysis
+
+### Mod Installation
+
+<details>
+<summary><b>macOS</b></summary>
+
+1. Find your game install:
+   ```
+   ~/Library/Application Support/Steam/steamapps/common/Slay the Spire 2/
+   ```
+2. Right-click `SlayTheSpire2.app` > Show Package Contents
+3. Navigate to `Contents/MacOS/`
+4. Create a `mods` folder if it doesn't exist
+5. Drop `STS2_MCP.dll` and `STS2_MCP.pck` into `mods/`
+6. Launch the game — it will ask to restart in modded mode
+
+Save files are separate for modded/unmodded. To carry over progress, copy your save from the unmodded directory to the modded one before first launch.
+</details>
+
+<details>
+<summary><b>Windows</b></summary>
+
+1. Find your game install:
+   ```
+   Steam\steamapps\common\Slay the Spire 2\
+   ```
+2. Create a `mods` folder if it doesn't exist
+3. Drop `STS2_MCP.dll` and `STS2_MCP.pck` into `mods/`
+4. Launch the game — it will ask to restart in modded mode
+
+Save files are separate for modded/unmodded. To carry over progress, copy your save from the unmodded directory to the modded one before first launch.
+</details>
+
+### Configuration
+
+Edit `config.json`:
+
+```json
+{
+  "api_url": "http://localhost:15526/api/v1/singleplayer",
+  "llm_cli": "/opt/homebrew/bin/claude",
+  "poll_interval_seconds": 2.5
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `api_url` | MCP mod API endpoint (default port: 15526) |
+| `llm_cli` | Path to your LLM CLI binary |
+| `poll_interval_seconds` | How often to poll game state |
+
+### Launch
 
 ```bash
-# Slay the Spire 2 must be running with MCP API enabled
 python3 -m overlay
 ```
 

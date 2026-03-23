@@ -868,8 +868,8 @@ class AIAdvisorMixin:
 {opts_str}
 
 资源管理考量：
-- HP{'充足(>70%)' if hp_pct > 70 else '偏低(<50%)需要回血机会' if hp_pct < 50 else '中等(50-70%)谨慎'}{"（战后回血"+str(heal_per_fight)+"HP/场）" if heal_per_fight > 0 else ""}
-- 金币{gold}{'，够买牌/删牌' if gold >= 75 else '，不够买牌需攒钱'}{gold_bonus}
+- HP{'充足(>70%)' if hp_pct > 70 else '偏低(<50%)需要回血机会' if hp_pct < 50 else '中等(50-70%)谨慎'}
+- 金币{gold}{'，够买牌/删牌' if gold >= 75 else '，不够买牌需攒钱'}
 - 药水{potion_cnt}瓶{'，精英/Boss战可用' if potion_cnt > 0 else '，没有保命手段要小心'}
 - Boss准备：{'牌组'+archetype+'成型中' if archetype != '未定型' else '牌组未定型，需要尽快确定方向'}
 {"遗物路线加成：" + chr(10) + relic_route_info if relic_route_info else ""}
