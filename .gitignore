@@ -12,3 +12,5 @@ docs/
 
 .vscode/
 .idea/
+.env
+*.env

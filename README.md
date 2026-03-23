@@ -64,6 +64,11 @@ Modded and unmodded saves are separate. Copy saves before first modded launch if
 
 ### Config + Launch
 
+Two LLM backends supported: CLI mode or API mode.
+
+<details>
+<summary><b>CLI mode (Claude CLI)</b></summary>
+
 ```json
 // config.json
 {
@@ -71,6 +76,25 @@ Modded and unmodded saves are separate. Copy saves before first modded launch if
   "llm_cli": "/opt/homebrew/bin/claude"
 }
 ```
+</details>
+
+<details>
+<summary><b>API mode (OpenAI / Anthropic / compatible)</b></summary>
+
+```json
+// config.json
+{
+  "api_url": "http://localhost:15526/api/v1/singleplayer",
+  "llm_api_base": "https://api.anthropic.com/v1",
+  "llm_model": "claude-sonnet-4-20250514"
+}
+```
+
+Set your API key as environment variable (never stored in config):
+```bash
+export LLM_API_KEY="sk-..."
+```
+</details>
 
 ```bash
 python3 -m overlay

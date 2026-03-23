@@ -2,13 +2,13 @@
   "Strength": {
     "name_cn": "力量",
     "type": "buff",
-    "effect": "攻击牌+N伤",
+    "effect": "ModifyDamageAdditive: owner==dealer → +N to attack damage. AllowNegative.",
     "calc": "+attack_damage"
   },
   "Dexterity": {
     "name_cn": "敏捷",
     "type": "buff",
-    "effect": "技能牌+N挡",
+    "effect": "ModifyBlockAdditive: +N to block gained.",
     "calc": "+block"
   },
   "Focus": {
@@ -20,37 +20,37 @@
   "Weak": {
     "name_cn": "虚弱",
     "type": "debuff",
-    "effect": "攻击×0.75",
+    "effect": "ModifyDamageMultiplicative: owner==dealer → ×0.75 attack damage.",
     "calc": "attack*0.75"
   },
   "Vulnerable": {
     "name_cn": "易伤",
     "type": "debuff",
-    "effect": "受伤×1.5",
+    "effect": "ModifyDamageMultiplicative: owner==target → ×1.5 damage taken.",
     "calc": "damage_taken*1.5"
   },
   "Frail": {
     "name_cn": "脆弱",
     "type": "debuff",
-    "effect": "格挡×0.75",
+    "effect": "ModifyBlockMultiplicative: ×0.75 block gained.",
     "calc": "block*0.75"
   },
   "Vigor": {
     "name_cn": "活力",
     "type": "buff",
-    "effect": "下次攻击+N伤(一次性)",
+    "effect": "ModifyDamageAdditive: first attack only → +N damage, then remove self.",
     "calc": "+next_attack"
   },
   "DoubleDamage": {
     "name_cn": "双倍伤害",
     "type": "buff",
-    "effect": "下次攻击×2",
+    "effect": "ModifyDamageMultiplicative: ×2 next attack, then remove.",
     "calc": "attack*2"
   },
   "Enrage": {
     "name_cn": "狂怒",
     "type": "buff",
-    "effect": "每受击+N力量",
+    "effect": "OnAttacked: ApplyPower<Strength>(self, N).",
     "calc": "+strength_on_hit"
   },
   "Aggression": {
@@ -68,37 +68,37 @@
   "Thorns": {
     "name_cn": "荆棘",
     "type": "buff",
-    "effect": "被攻击反弹N伤",
+    "effect": "OnAttacked: deal N damage to attacker.",
     "calc": "reflect_damage"
   },
   "Plating": {
     "name_cn": "覆甲",
     "type": "buff",
-    "effect": "每回合+N挡",
+    "effect": "OnTurnStart: GainBlock(N).",
     "calc": "+block_per_turn"
   },
   "Metallicize": {
     "name_cn": "金属化",
     "type": "buff",
-    "effect": "回合结束+N挡",
+    "effect": "OnTurnEnd: GainBlock(N).",
     "calc": "+block_per_turn"
   },
   "Barricade": {
     "name_cn": "壁垒",
     "type": "buff",
-    "effect": "格挡不消失",
+    "effect": "PreventBlockLoss: block persists between turns.",
     "calc": "block_persists"
   },
   "Buffer": {
     "name_cn": "缓冲",
     "type": "buff",
-    "effect": "抵消N次伤害→0",
+    "effect": "OnDamage: if damage>0 → set damage=0, decrement N. Remove when N=0.",
     "calc": "negate_damage"
   },
   "Intangible": {
     "name_cn": "无实体",
     "type": "buff",
-    "effect": "所有伤害→1",
+    "effect": "ModifyDamage: all damage reduced to 1. Decrement each turn.",
     "calc": "all_damage=1"
   },
   "FlameBarrier": {
@@ -110,7 +110,7 @@
   "Artifact": {
     "name_cn": "神器",
     "type": "buff",
-    "effect": "抵消N次debuff",
+    "effect": "OnDebuffApplied: cancel debuff, decrement N. Remove when N=0.",
     "calc": "negate_debuff"
   },
   "Retain": {
@@ -146,7 +146,7 @@
   "Burst": {
     "name_cn": "爆发",
     "type": "buff",
-    "effect": "下N张技能打两次",
+    "effect": "OnPlay(Skill): play it again. Decrement N. Remove when N=0.",
     "calc": "double_skill"
   },
   "Duplication": {
@@ -158,13 +158,13 @@
   "EchoForm": {
     "name_cn": "回响形态",
     "type": "buff",
-    "effect": "每回合首牌打两次",
+    "effect": "OnTurnStart: first card played is duplicated (played twice).",
     "calc": "double_first"
   },
   "Poison": {
     "name_cn": "中毒",
     "type": "debuff",
-    "effect": "回合开始受N伤→N-1",
+    "effect": "OnTurnStart: TakeDamage(N), then N-=1. Remove when N=0.",
     "calc": "dot_damage"
   },
   "NoxiousFumes": {
@@ -182,19 +182,19 @@
   "Regen": {
     "name_cn": "再生",
     "type": "buff",
-    "effect": "每回合+N血",
+    "effect": "OnTurnEnd: Heal(N), then N-=1. Remove when N=0.",
     "calc": "+heal_per_turn"
   },
   "DemonForm": {
     "name_cn": "恶魔形态",
     "type": "buff",
-    "effect": "每回合+N力量",
+    "effect": "OnTurnStart: ApplyPower<Strength>(self, N).",
     "calc": "+strength_per_turn"
   },
   "Curious": {
     "name_cn": "好奇心",
     "type": "buff",
-    "effect": "玩家出能力牌→此怪+1力量",
+    "effect": "OnCardPlayed(type==Power): ApplyPower<Strength>(self, 1).",
     "calc": "+strength_on_power"
   },
   "Minion": {
@@ -206,13 +206,13 @@
   "CurlUp": {
     "name_cn": "卷曲",
     "type": "buff",
-    "effect": "首次受击+N挡",
+    "effect": "OnFirstAttacked: GainBlock(N), then remove self.",
     "calc": "+block_first_hit"
   },
   "Angry": {
     "name_cn": "愤怒",
     "type": "buff",
-    "effect": "每受击+N力量",
+    "effect": "OnAttacked: ApplyPower<Strength>(self, N).",
     "calc": "+strength_on_hit"
   },
   "SporeCloud": {
@@ -224,54 +224,54 @@
   "Slow": {
     "name_cn": "减速",
     "type": "debuff",
-    "effect": "玩家每出1牌此敌受伤+10%",
+    "effect": "OnCardPlayed(by player): increase damage taken by 10% per card.",
     "calc": "+damage_taken_per_card"
   },
   "NoBlock": {
     "name_cn": "无法格挡",
     "type": "debuff",
-    "effect": "无法格挡",
+    "effect": "PreventBlockGain: cannot gain block.",
     "calc": "no_block"
   },
   "DieForYou": {
     "name_cn": "为你而死",
     "type": "buff",
-    "effect": "重定向未格挡攻击→自身(per hit)。死后停止但power保留可复活。多段攻击只挡当前hit"
+    "effect": "ModifyUnblockedDamageTarget: if target==petOwner && !owner.IsDead && isPoweredAttack → redirect to owner. Per-hit. PowerPersistsAfterDeath. CreatureNotRemovedAfterDeath."
   },
   "NecroMastery": {
     "name_cn": "亡灵精通",
     "type": "buff",
-    "effect": "奥斯提受伤→全体敌人等量伤害",
+    "effect": "OnAllyDamaged(Osty): DealDamageToAll(enemies, sameDamage).",
     "calc": "aoe_on_ally_hurt"
   },
   "Calamity": {
     "name_cn": "灾厄",
     "type": "debuff",
-    "effect": "灾厄层数,触发相关卡效果",
+    "effect": "StackCounter. Triggers card-specific effects (DeathsDoor repeat, etc).",
     "calc": "synergy_trigger"
   },
   "Ravenous": {
     "name_cn": "饥饿",
     "type": "buff",
-    "effect": "同伴死→+力量+击晕1回合",
+    "effect": "AfterDeath(ally on same side): Stun(self) + ApplyPower<Strength>(self, N). Counter stackable.",
     "calc": "stun_on_ally_death+strength"
   },
   "FeedingFrenzy": {
     "name_cn": "狂食",
     "type": "buff",
-    "effect": "同伴死→+力量+最大HP",
+    "effect": "AfterDeath(ally): GainStrength(N) + IncreaseMaxHP.",
     "calc": "+strength_on_ally_death"
   },
   "Slumber": {
     "name_cn": "沉睡",
     "type": "buff",
-    "effect": "睡眠中,被攻击后苏醒",
+    "effect": "Sleeping. OnAttacked: wake up + take turn.",
     "calc": "wake_on_hit"
   },
   "HardenedShell": {
     "name_cn": "硬壳",
     "type": "buff",
-    "effect": "受伤不超过N",
+    "effect": "ModifyDamage: cap damage at N per hit.",
     "calc": "damage_cap"
   },
   "Doom": {
@@ -301,13 +301,13 @@
   "Stun": {
     "name_cn": "击晕",
     "type": "debuff",
-    "effect": "跳过本回合",
+    "effect": "SkipTurn. Remove after 1 turn.",
     "calc": "skip_turn"
   },
   "Entangle": {
     "name_cn": "缠绕",
     "type": "debuff",
-    "effect": "无法出攻击牌",
+    "effect": "PreventPlay(Attacks): cannot play attack cards.",
     "calc": "no_attack"
   },
   "MindRot": {
@@ -325,13 +325,13 @@
   "Strangle": {
     "name_cn": "窒息",
     "type": "debuff",
-    "effect": "无法出技能牌",
+    "effect": "PreventPlay(Skills): cannot play skill cards.",
     "calc": "no_skill"
   },
   "Corruption": {
     "name_cn": "腐化",
     "type": "buff",
-    "effect": "技能0费但消耗",
+    "effect": "ModifyCost(Skills): cost=0. OnPlay(Skill): exhaust.",
     "calc": "skill_cost=0+exhaust"
   },
   "Panache": {

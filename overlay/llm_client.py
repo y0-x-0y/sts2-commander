@@ -1,52 +1,75 @@
-"""LLMClient — LLM 调用的封装层。
+"""LLMClient — LLM call abstraction.
 
-隔离 LLM 调用细节（CLI/API/模型选择），其他模块只需：
-    result = self.llm.ask(prompt)
+Supports two backends:
+  1. CLI mode (default): calls claude/llm CLI via subprocess
+  2. API mode: calls OpenAI-compatible API (Anthropic, OpenAI, local, etc.)
+
+Config via config.json:
+  CLI mode:  {"llm_cli": "/path/to/claude"}
+  API mode:  {"llm_api_base": "https://api.anthropic.com/v1", "llm_model": "claude-sonnet-4-20250514"}
+  API key:   set env var LLM_API_KEY (never stored in config/code)
 """
 
 import os
 import shutil
 import subprocess
+import json
 
 from overlay.constants import LLM_CLI, _proj
 
 SYSTEM_PROMPT_FILE = _proj("docs", "system_prompt.txt")
 
+# Load API config from config.json if present
+_CONFIG_PATH = _proj("config.json")
+_CONFIG = {}
+try:
+    if os.path.exists(_CONFIG_PATH):
+        with open(_CONFIG_PATH) as f:
+            _CONFIG = json.load(f)
+except Exception:
+    pass
+
 
 class LLMClient:
-    """LLM 客户端 — 封装 Claude CLI 调用。
-
-    用法：
-        self.llm = LLMClient()
-        answer = self.llm.ask("分析这个战斗...")
-        answer = self.llm.ask(prompt, timeout=90)
-    """
+    """LLM client — abstracts CLI and API backends."""
 
     def __init__(self, post_process=None):
-        """
-        Args:
-            post_process: 可选的后处理函数 (str) -> str，
-                          如 CardDB.translate 用于翻译英文卡名。
-        """
-        self._cli = LLM_CLI
-        self._system_prompt = None  # 懒加载，缓存
         self._post_process = post_process
+        self._system_prompt = None
 
-        if not shutil.which(self._cli):
-            print(f"[LLM] Warning: CLI '{self._cli}' not found")
+        # Determine backend
+        self._api_base = _CONFIG.get("llm_api_base", "")
+        self._model = _CONFIG.get("llm_model", "")
+        self._api_key = os.environ.get("LLM_API_KEY", "")
+        self._cli = LLM_CLI
+
+        if self._api_base and self._api_key:
+            self._mode = "api"
+            print(f"[LLM] API mode: {self._api_base} model={self._model}")
+        else:
+            self._mode = "cli"
+            if not shutil.which(self._cli):
+                print(f"[LLM] Warning: CLI '{self._cli}' not found")
+            else:
+                print(f"[LLM] CLI mode: {self._cli}")
 
     def ask(self, prompt: str, timeout: int = 60) -> str:
-        """调用 LLM，返回回答文本。
+        """Call LLM and return response text."""
+        if self._mode == "api":
+            result = self._ask_api(prompt, timeout)
+        else:
+            result = self._ask_cli(prompt, timeout)
 
-        Raises:
-            RuntimeError: CLI 不存在、超时、或返回错误
-        """
+        if self._post_process:
+            result = self._post_process(result)
+        return result
+
+    def _ask_cli(self, prompt: str, timeout: int) -> str:
         if not os.path.exists(self._cli) and not shutil.which(self._cli):
-            raise RuntimeError(f"LLM 未找到：{self._cli}\n请检查 config.json 中的 llm_cli 路径")
+            raise RuntimeError(f"LLM not found: {self._cli}")
 
         cmd = [self._cli, "--print", "--permission-mode", "bypassPermissions"]
 
-        # 懒加载 system prompt
         if self._system_prompt is None:
             self._system_prompt = self._load_system_prompt()
         if self._system_prompt:
@@ -56,29 +79,66 @@ class LLMClient:
             r = subprocess.run(cmd, input=prompt, capture_output=True,
                                text=True, timeout=timeout)
         except FileNotFoundError:
-            raise RuntimeError(f"LLM 无法执行：{self._cli}")
+            raise RuntimeError(f"LLM cannot execute: {self._cli}")
         except subprocess.TimeoutExpired:
-            raise RuntimeError("分析超时，请重试")
+            raise RuntimeError("Analysis timeout, please retry")
 
         if r.returncode != 0:
-            raise RuntimeError(r.stderr.strip() or "调用失败")
+            raise RuntimeError(r.stderr.strip() or "LLM call failed")
 
-        result = r.stdout.strip()
+        return r.stdout.strip()
 
-        # 后处理（如英文→中文翻译）
-        if self._post_process:
-            result = self._post_process(result)
+    def _ask_api(self, prompt: str, timeout: int) -> str:
+        import requests
 
-        return result
+        if self._system_prompt is None:
+            self._system_prompt = self._load_system_prompt()
+
+        headers = {"Content-Type": "application/json"}
+        messages = []
+
+        if self._system_prompt:
+            messages.append({"role": "system", "content": self._system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        # Detect API format (Anthropic vs OpenAI)
+        if "anthropic" in self._api_base.lower():
+            # Anthropic Messages API
+            headers["x-api-key"] = self._api_key
+            headers["anthropic-version"] = "2023-06-01"
+            body = {
+                "model": self._model or "claude-sonnet-4-20250514",
+                "max_tokens": 2048,
+                "system": self._system_prompt or "",
+                "messages": [{"role": "user", "content": prompt}],
+            }
+            url = self._api_base.rstrip("/") + "/messages"
+            r = requests.post(url, headers=headers, json=body, timeout=timeout)
+            r.raise_for_status()
+            data = r.json()
+            return data.get("content", [{}])[0].get("text", "").strip()
+        else:
+            # OpenAI-compatible API (OpenAI, local, etc.)
+            headers["Authorization"] = f"Bearer {self._api_key}"
+            body = {
+                "model": self._model or "gpt-4",
+                "messages": messages,
+                "max_tokens": 2048,
+            }
+            url = self._api_base.rstrip("/") + "/chat/completions"
+            r = requests.post(url, headers=headers, json=body, timeout=timeout)
+            r.raise_for_status()
+            data = r.json()
+            return data["choices"][0]["message"]["content"].strip()
 
     @property
     def available(self) -> bool:
-        """LLM CLI 是否可用。"""
+        if self._mode == "api":
+            return bool(self._api_base and self._api_key)
         return bool(shutil.which(self._cli))
 
     @staticmethod
     def _load_system_prompt() -> str:
-        """加载 system prompt 文件。"""
         try:
             if os.path.exists(SYSTEM_PROMPT_FILE):
                 with open(SYSTEM_PROMPT_FILE) as f:
