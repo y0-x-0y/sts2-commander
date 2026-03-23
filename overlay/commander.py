@@ -9,6 +9,10 @@ STS2 战略指挥官 v6.0 — pywebview Rewrite
   - ai_advisor.py — LLM调用和策略（改prompt改这里）
   - history.py    — 日志、回放、复盘
   - data.py       — 数据加载、存档、session
+  - card_db.py    — 卡牌数据单一数据源（CardDB）
+  - game_state.py — 游戏状态管理（GameState）
+  - knowledge_db.py — 策略知识库（KnowledgeDB）
+  - llm_client.py — LLM 调用封装（LLMClient）
 """
 
 import json
@@ -18,13 +22,10 @@ import threading
 import time
 import requests
 import webview
-from collections import Counter
-
 from overlay.constants import (
     API_URL, POLL_SECS,
     BG, PANEL, CARD, BORDER, GOLD, GOLD_DIM, PARCH, PARCH_DIM,
     RED, GREEN, BLUE, SHADOW,
-    _cn_power,
 )
 
 from overlay.display import DisplayMixin
@@ -93,7 +94,18 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
         self._window_ready = threading.Event()
 
         self._build_ui()
-        self._load_card_db()
+
+        # ── 解耦模块（单一数据源，统一接口）──
+        from overlay.card_db import CardDB
+        from overlay.game_state import GameState
+        from overlay.knowledge_db import KnowledgeDB
+        from overlay.llm_client import LLMClient
+
+        self.cards = CardDB()
+        self.gs = GameState()
+        self.kb = KnowledgeDB()
+        self.llm = LLMClient(post_process=self.cards.translate)
+
         self._load_unlock_state()
         self._load_knowledge()
         self._load_archetype()
@@ -144,7 +156,6 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
                     print(f"[Poll] API OK: {state.get('state_type')}", flush=True)
                     self._poll_logged = True
                     threading.Timer(3.0, self._save_session).start()
-                self._js('app.setConnection("●  已连接")')
                 try:
                     self._collect_cards(state)
                     self._on_update(state)
@@ -154,13 +165,12 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
                 self._fail_count += 1
                 if self._fail_count == 1:
                     self._js('app.setConnection("等待游戏连接…")')
-                    msg = json.dumps(
+                    self._push_scene(
                         "等待游戏启动…\n\n"
                         "请确保：\n"
                         "  1. 杀戮尖塔2已启动\n"
                         "  2. MCP API 已开启\n"
-                        f"  3. API地址：{API_URL}")
-                    self._js(f'app.updateScene({{type:"html",html:{msg}}})')
+                        f"  3. API地址：{API_URL}", tab=None)
                 elif self._fail_count >= 5:
                     self._js('app.setConnection("等待游戏…")')
             except requests.exceptions.RequestException:
@@ -175,7 +185,6 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
     #  STATE DISPATCH
     # ══════════════════════════════════════════
     def _on_update(self, state):
-        self._js('app.setConnection("●  已连接")')
 
         stype = state.get("state_type", "unknown")
         player = self._get_player(state)
@@ -190,7 +199,7 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
         if run:
             self.last_run = run
 
-        self._refresh_header(self.last_player, self.last_run)
+        self._refresh_header(self.last_player, self.last_run, state if stype in ("monster", "elite", "boss") else None)
 
         type_changed  = stype != self.last_type
         cur_round     = state.get("battle", {}).get("round", -1)
@@ -203,6 +212,7 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
             self._busy_deck   = False
             self._js('app.setButtonState("btn-situation", "◆  求策·当前形势  ◆", false)')
             self._js('app.setButtonState("btn-deck", "◆  求策·卡组  ◆", false)')
+            self._clear_advice()
 
         # First connection
         valid_types = ("monster", "elite", "boss", "map", "event", "shop", "rest",
@@ -224,7 +234,8 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
 
             self._record_combat_snapshot(state, cur_round, type_changed or round_changed)
 
-            if type_changed or round_changed:
+            if (type_changed or round_changed) and not self._busy_combat:
+                self._clear_advice()
                 threading.Timer(1.5, self._delayed_display_combat).start()
 
         elif stype == "map":
@@ -262,8 +273,7 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
 
         elif stype == "treasure":
             if type_changed:
-                msg = json.dumps("宝箱\n\n  直接领取即可。")
-                self._js(f'app.updateScene({{type:"html",html:{msg}}})')
+                self._push_scene("宝箱\n\n  直接领取即可。", tab=None)
 
         # Log transition
         if type_changed and self.last_type:
@@ -297,15 +307,17 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
         self.last_round = cur_round
 
     def _show_analyzing(self, msg="正在分析…"):
+        self._js('app.setAdviceTitle("AI 决策建议")')
         self._js(f'app.updateAdvice({json.dumps(html.escape(msg))})')
 
     def _clear_advice(self):
+        self._js('app.setAdviceTitle("AI 决策建议")')
         self._js('app.updateAdvice("")')
 
     # ══════════════════════════════════════════
     #  HEADER REFRESH
     # ══════════════════════════════════════════
-    def _refresh_header(self, p, run):
+    def _refresh_header(self, p, run, combat_state=None):
         hp    = p.get("hp", 0)
         mhp   = p.get("max_hp", 80)
         gold  = p.get("gold", "—")
@@ -317,90 +329,24 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
         asc_str = f" A{asc}" if asc else ""
         relics = len(p.get("relics", []))
 
-        header_data = json.dumps({
+        header_data = {
             "char": f"{char}{asc_str}",
             "hp": hp,
             "maxHp": mhp,
             "gold": gold,
             "relics": relics,
-        })
-        self._js(f'app.updateHeader({header_data})')
+        }
+        # Add combat-specific stats to header
+        if combat_state:
+            bp = combat_state.get("battle", {}).get("player", {})
+            header_data["energy"] = bp.get("energy", "?")
+            header_data["maxEnergy"] = bp.get("max_energy", "?")
+            block = bp.get("block", 0)
+            if block:
+                header_data["block"] = block
+
+        self._js(f'app.updateHeader({json.dumps(header_data)})')
         self._js(f'app.setConnection("幕{act} · 层{floor}")')
-
-    def _refresh_combat_header(self, state):
-        """Display combat state in the scene area using HTML."""
-        try:
-            self._refresh_combat_header_inner(state)
-        except Exception as e:
-            print(f"[Combat Header Error] {e}")
-            import traceback; traceback.print_exc()
-
-    def _refresh_combat_header_inner(self, state):
-        battle  = state.get("battle", {})
-        enemies = battle.get("enemies", [])
-        player  = battle.get("player", {})
-        hand    = player.get("hand", [])
-        draw    = player.get("draw_pile_count", 0)
-        disc    = player.get("discard_pile_count", 0)
-        exh     = player.get("exhaust_pile_count", 0)
-        rnd     = battle.get("round", 1)
-
-        parts = [f'<span class="gold" style="font-weight:600">第{rnd}回合</span><br><br>']
-
-        for e in enemies:
-            if not e.get("name"):
-                continue
-            ehp  = e.get("hp", 0)
-            emhp = e.get("max_hp", 1)
-            intents = self._fmt_intent(e.get("intents", []))
-            powers  = "  ".join(f"{_cn_power(p)}x{p['amount']}" for p in e.get("powers", []))
-            blk = e.get("block", 0)
-
-            parts.append(f'<span class="warn" style="font-weight:600">{html.escape(e["name"])}</span>')
-            parts.append(f'  <span class="warn">HP {ehp}/{emhp}</span>')
-            if blk:
-                parts.append(f'  <span class="blue">格挡{blk}</span>')
-            parts.append(f'  意图：<span class="warn">{html.escape(intents)}</span>')
-            parts.append('<br>')
-            if powers:
-                parts.append(f'  <span class="debuff">{html.escape(powers)}</span><br>')
-
-        allies = [a for a in battle.get("allies", [])
-                  if a.get("name") and a.get("name") != "None"]
-        for a in allies:
-            ahp  = a.get("hp", 0)
-            amhp = a.get("max_hp", 1)
-            ablk = a.get("block", 0)
-            apow = "  ".join(f"{_cn_power(p)}x{p['amount']}" for p in a.get("powers", []))
-            parts.append(f'<br><span class="buff">{html.escape(a["name"])}</span>')
-            parts.append(f'  <span class="buff">HP {ahp}/{amhp}</span>')
-            if ablk:
-                parts.append(f'  <span class="blue">格挡{ablk}</span>')
-            if apow:
-                parts.append(f'  <span class="buff">{html.escape(apow)}</span>')
-            parts.append('<br>')
-
-        parts.append('<br><span class="gold" style="font-weight:600">我方</span><br>')
-        ppow = player.get("powers", [])
-        if ppow:
-            ppow_str = "  ".join(f"{_cn_power(p)}x{p['amount']}" for p in ppow)
-            parts.append(f'  能力：<span class="buff">{html.escape(ppow_str)}</span><br>')
-
-        card_names = []
-        for c in hand:
-            upg = "+" if c.get("is_upgraded") else ""
-            card_names.append(f"{c['name']}{upg}")
-        counted = Counter(card_names)
-        card_parts = []
-        for name, cnt in counted.items():
-            card_parts.append(f"{name}x{cnt}" if cnt > 1 else name)
-        parts.append('  手牌：')
-        parts.append(f'<span class="highlight">{html.escape(" · ".join(card_parts) if card_parts else "（空）")}</span>')
-        parts.append('<br>')
-        parts.append(f'  <span class="dim">抽牌堆 {draw} | 弃牌堆 {disc} | 消耗堆 {exh}</span><br>')
-
-        content = "".join(parts)
-        self._js(f'app.updateScene({{type:"html",html:{json.dumps(content)}}})')
 
     # ══════════════════════════════════════════
     #  BUTTON CALLBACKS

@@ -1,0 +1,2363 @@
+{
+  "Akabeko": {
+    "name_cn": "赤牛",
+    "desc": "在每场战斗开始时，获得X点活力。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "AlchemicalCoffer": {
+    "name_cn": "炼金箱",
+    "desc": "拾起时，获得X个放有随机药水的药水栏位。",
+    "rarity": "Ancient",
+    "context": [
+      "potion"
+    ]
+  },
+  "AmethystAubergine": {
+    "name_cn": "紫水晶茄子",
+    "desc": "敌人额外掉落X金币。",
+    "rarity": "Common",
+    "context": [
+      "map_gold"
+    ]
+  },
+  "Anchor": {
+    "name_cn": "锚",
+    "desc": "每场战斗开始时获得X点格挡。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "ArcaneScroll": {
+    "name_cn": "奥术卷轴",
+    "desc": "拾起时，将一张随机稀有牌加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "ArchaicTooth": {
+    "name_cn": "古老牙齿",
+    "desc": "拾起时，将X变化为X|一张初始卡牌变化为先古版本}。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "ArtOfWar": {
+    "name_cn": "孙子兵法",
+    "desc": "如果你在本回合中没有打出过攻击牌，则在下一回合额外获得1点X。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "Astrolabe": {
+    "name_cn": "星盘",
+    "desc": "拾起时，选择X张牌进行变化，然后将这些牌升级。",
+    "rarity": "Ancient",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "BagOfMarbles": {
+    "name_cn": "弹珠袋",
+    "desc": "在每场战斗开始时，给予所有敌人X层易伤。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "BagOfPreparation": {
+    "name_cn": "准备背包",
+    "desc": "在每场战斗开始时，额外抽X张牌。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "BeatingRemnant": {
+    "name_cn": "律动残余",
+    "desc": "你在一回合内失去的生命值不会超过20点。",
+    "rarity": "Rare",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "BeautifulBracelet": {
+    "name_cn": "华美手镯",
+    "desc": "拾起时，从你的牌组中选择X张牌，附魔：迅捷3。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "Bellows": {
+    "name_cn": "风箱",
+    "desc": "你在每场战斗开始时的手牌，将被升级。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat",
+      "map_rest"
+    ]
+  },
+  "BeltBuckle": {
+    "name_cn": "腰带扣",
+    "desc": "当你没有药水时，你额外拥有X点敏捷。",
+    "rarity": "Shop",
+    "context": [
+      "combat",
+      "potion"
+    ]
+  },
+  "BigHat": {
+    "name_cn": "大帽子",
+    "desc": "在每场战斗开始时，将X张随机虚无牌加入你的手牌。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "BigMushroom": {
+    "name_cn": "大蘑菇",
+    "desc": "拾起时，将你的最大生命值提升X。在每场战斗开始时，少抽X张牌。",
+    "rarity": "Event",
+    "context": [
+      "combat",
+      "map_heal"
+    ]
+  },
+  "BiiigHug": {
+    "name_cn": "大～抱抱",
+    "desc": "拾起时，从你的牌组中移除X张牌。每当你的抽牌堆打乱洗牌时，将一张煤灰加入你的抽牌堆。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "BingBong": {
+    "name_cn": "冰梆",
+    "desc": "每当你往牌组中增添卡牌时，都将额外添加一张相同的牌。",
+    "rarity": "Event",
+    "context": [
+      "passive"
+    ]
+  },
+  "BlackBlood": {
+    "name_cn": "黑暗之血",
+    "desc": "在战斗结束时，回复X点生命。",
+    "rarity": "Starter",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "BlackStar": {
+    "name_cn": "黑星",
+    "desc": "精英敌人在被打败时多掉落一件遗物。",
+    "rarity": "Ancient",
+    "context": [
+      "map_elite",
+      "map_gold"
+    ]
+  },
+  "BlessedAntler": {
+    "name_cn": "赐福鹿角",
+    "desc": "在每回合开始时获得X。在战斗开始时，将X张晕眩放入你的抽牌堆。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "BloodSoakedRose": {
+    "name_cn": "血染玫瑰",
+    "desc": "拾起时，将1张执迷加入你的牌组。在回合开始时获得X。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "BloodVial": {
+    "name_cn": "小血瓶",
+    "desc": "在每场战斗开始时，回复X点生命。",
+    "rarity": "Common",
+    "context": [
+      "combat",
+      "map_heal"
+    ]
+  },
+  "BoneFlute": {
+    "name_cn": "骨笛",
+    "desc": "每当奥斯提攻击时，获得X点格挡。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "BoneTea": {
+    "name_cn": "骨茶",
+    "desc": "在你接下来的X场战斗开始时，升级你的初始手牌。",
+    "rarity": "Event",
+    "context": [
+      "combat",
+      "map_rest"
+    ]
+  },
+  "BookOfFiveRings": {
+    "name_cn": "五轮书",
+    "desc": "你每将X张牌加入你的牌组时，回复X点生命。",
+    "rarity": "Common",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "BookRepairKnife": {
+    "name_cn": "修书小刀",
+    "desc": "每当有一名不是“爪牙”的敌人死于灾厄时，回复X点生命。",
+    "rarity": "Uncommon",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "Bookmark": {
+    "name_cn": "书签",
+    "desc": "在每个回合结束时，将随机一张被保留的牌，直到被打出前耗能减少1。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "BoomingConch": {
+    "name_cn": "轰鸣海螺",
+    "desc": "在精英战的战斗开始时，额外抽X张牌。",
+    "rarity": "Ancient",
+    "context": [
+      "combat",
+      "map_elite"
+    ]
+  },
+  "BoundPhylactery": {
+    "name_cn": "缚魂命匣",
+    "desc": "在你的回合开始时，召唤X",
+    "rarity": "Starter",
+    "context": [
+      "combat"
+    ]
+  },
+  "BowlerHat": {
+    "name_cn": "圆顶礼帽",
+    "desc": "额外获得20%的金币。",
+    "rarity": "Uncommon",
+    "context": [
+      "map_gold"
+    ]
+  },
+  "Bread": {
+    "name_cn": "面包",
+    "desc": "在你的第一个回合开始时，失去X。在其余的回合开始时，获得X。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "BrilliantScarf": {
+    "name_cn": "艳丽围巾",
+    "desc": "你每回合打出的第5张牌可以被免费打出。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "Brimstone": {
+    "name_cn": "硫磺",
+    "desc": "在你的每个回合开始时，你获得X点力量，所有敌人获得X点力量。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "BronzeScales": {
+    "name_cn": "铜质鳞片",
+    "desc": "在每场战斗开始时，获得X点荆棘。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "BurningBlood": {
+    "name_cn": "燃烧之血",
+    "desc": "在战斗结束时，回复X点生命。",
+    "rarity": "Starter",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "BurningSticks": {
+    "name_cn": "燃烧木棍",
+    "desc": "每场战斗中你第一次消耗技能牌时，将那张牌的复制品加入你的手牌",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "Byrdpip": {
+    "name_cn": "异鸟宝宝",
+    "desc": "拾起时，获得一张异鸟扑击。一只幼年异鸟会在战斗中陪伴你。",
+    "rarity": "Event",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "CallingBell": {
+    "name_cn": "召唤铃铛",
+    "desc": "拾起时，获得一个独特的诅咒和X件遗物。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "Candelabra": {
+    "name_cn": "烛台",
+    "desc": "在你的第2回合开始时，获得X。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "CaptainsWheel": {
+    "name_cn": "舵盘",
+    "desc": "在你的第三回合开始时，获得X点格挡。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "Cauldron": {
+    "name_cn": "大锅",
+    "desc": "拾起时，制作X瓶随机药水。",
+    "rarity": "Shop",
+    "context": [
+      "potion"
+    ]
+  },
+  "CentennialPuzzle": {
+    "name_cn": "百年积木",
+    "desc": "你在每场战斗中第一次损失生命值时，抽X张牌。",
+    "rarity": "Common",
+    "context": [
+      "combat",
+      "map_heal"
+    ]
+  },
+  "Chandelier": {
+    "name_cn": "吊灯",
+    "desc": "在你的第三回合开始时，获得X。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "CharonsAshes": {
+    "name_cn": "卡戎之灰",
+    "desc": "每当你消耗一张牌，对所有敌人造成X点伤害。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "ChemicalX": {
+    "name_cn": "化学物X",
+    "desc": "耗能为X的牌的效果数值增加X点。",
+    "rarity": "Shop",
+    "context": [
+      "passive"
+    ]
+  },
+  "ChoicesParadox": {
+    "name_cn": "选择悖论",
+    "desc": "在每场战斗开始时，你可以从X张随机牌中选择1张放入你的手牌。然后被选定的那张牌获得保留。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "ChosenCheese": {
+    "name_cn": "天选芝士",
+    "desc": "在战斗结束时，获得X点最大生命值。",
+    "rarity": "Event",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "Circlet": {
+    "name_cn": "头环",
+    "desc": "这是一个头环。",
+    "rarity": "None",
+    "context": [
+      "passive"
+    ]
+  },
+  "Claws": {
+    "name_cn": "利爪",
+    "desc": "拾起时，将至多X张牌变化为撕咬。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "CloakClasp": {
+    "name_cn": "斗篷扣",
+    "desc": "在你的回合结束时，每有一张手牌，就获得X点格挡",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "CrackedCore": {
+    "name_cn": "破损核心",
+    "desc": "在每场战斗开始时，生成X个闪电充能球。",
+    "rarity": "Starter",
+    "context": [
+      "combat"
+    ]
+  },
+  "Crossbow": {
+    "name_cn": "十字弓",
+    "desc": "在你的回合开始时，将一张随机攻击牌加入你的手牌。这张牌在本回合耗能为0X。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "CursedPearl": {
+    "name_cn": "诅咒珍珠",
+    "desc": "拾起时，获得一张贪婪，获得X金币。",
+    "rarity": "Ancient",
+    "context": [
+      "map_gold"
+    ]
+  },
+  "DarkstonePeriapt": {
+    "name_cn": "黑石护符",
+    "desc": "每当你获得一张诅咒，就将你的最大生命值提升X。",
+    "rarity": "Event",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "DataDisk": {
+    "name_cn": "数据磁盘",
+    "desc": "在每场战斗开始时，获得X点集中。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "DaughterOfTheWind": {
+    "name_cn": "风的女儿",
+    "desc": "每当你打出一张攻击牌时，获得X点格挡。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "DelicateFrond": {
+    "name_cn": "娇嫩蕨草",
+    "desc": "在每场战斗开始时，用随机药水将你的空药水栏位填满。",
+    "rarity": "Ancient",
+    "context": [
+      "combat",
+      "potion"
+    ]
+  },
+  "DemonTongue": {
+    "name_cn": "恶魔之舌",
+    "desc": "当你第一次在自身回合内失去生命值时，回复等量的生命值。",
+    "rarity": "Rare",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "DeprecatedRelic": {
+    "name_cn": "弃用遗物",
+    "desc": "这件遗物已经从游戏中被移除。它在这里仅做纪念意义。",
+    "rarity": "None",
+    "context": [
+      "passive"
+    ]
+  },
+  "DiamondDiadem": {
+    "name_cn": "钻石头冠",
+    "desc": "如果你在本回合打出的牌少于等于X张，则受到敌人的伤害减半。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "DingyRug": {
+    "name_cn": "肮脏地毯",
+    "desc": "卡牌奖励现在会包括无色牌。",
+    "rarity": "Shop",
+    "context": [
+      "card_reward"
+    ]
+  },
+  "DistinguishedCape": {
+    "name_cn": "卓越斗篷",
+    "desc": "拾起时，失去9点最大生命值。将X张灵体加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "DivineDestiny": {
+    "name_cn": "天命所归",
+    "desc": "在每场战斗开始时，获得X。",
+    "rarity": "Starter",
+    "context": [
+      "combat"
+    ]
+  },
+  "DivineRight": {
+    "name_cn": "天赋君权",
+    "desc": "在每场战斗开始时，获得X。",
+    "rarity": "Starter",
+    "context": [
+      "combat"
+    ]
+  },
+  "DollysMirror": {
+    "name_cn": "多利之镜",
+    "desc": "拾起时，从你的牌组中选择一张牌进行复制。",
+    "rarity": "Shop",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "DragonFruit": {
+    "name_cn": "火龙果",
+    "desc": "每当你获得金币时，提升X点你的最大生命值。",
+    "rarity": "Shop",
+    "context": [
+      "map_gold",
+      "map_heal"
+    ]
+  },
+  "DreamCatcher": {
+    "name_cn": "捕梦网",
+    "desc": "每当你休息时，可以添加一张牌到你的牌组。",
+    "rarity": "Event",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "Driftwood": {
+    "name_cn": "浮木",
+    "desc": "你可以在每一个卡牌奖励中重掷一次。",
+    "rarity": "Ancient",
+    "context": [
+      "card_reward"
+    ]
+  },
+  "DustyTome": {
+    "name_cn": "尘封魔典",
+    "desc": "拾起时，获得一张X+|先古牌}。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "Ectoplasm": {
+    "name_cn": "灵体外质",
+    "desc": "你不能再获得任何金币。在回合开始时获得X",
+    "rarity": "Ancient",
+    "context": [
+      "combat",
+      "map_gold"
+    ]
+  },
+  "ElectricShrymp": {
+    "name_cn": "放电异虾",
+    "desc": "拾起时，选择一张技能牌为它附魔：注能。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "EmberTea": {
+    "name_cn": "余烬茶",
+    "desc": "在接下来的X场战斗开始时，获得X点力量。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "EmotionChip": {
+    "name_cn": "情感芯片",
+    "desc": "在每回合开始时，如果你在之前回合受到过伤害，则触发所有充能球的被动效果。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "EmptyCage": {
+    "name_cn": "空鸟笼",
+    "desc": "取得時、デッキからカードをX枚削除する",
+    "rarity": "Ancient",
+    "context": [
+      "passive"
+    ]
+  },
+  "EternalFeather": {
+    "name_cn": "永恒羽毛",
+    "desc": "你的牌组中每有X张牌，当你进入休息处时就会回复X点生命。",
+    "rarity": "Uncommon",
+    "context": [
+      "map_rest",
+      "map_heal"
+    ]
+  },
+  "FakeAnchor": {
+    "name_cn": "锚？？？",
+    "desc": "在每场战斗开始时，获得X点格挡。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "FakeBloodVial": {
+    "name_cn": "小血瓶？？？",
+    "desc": "在每场战斗开始时，回复X点生命。",
+    "rarity": "Event",
+    "context": [
+      "combat",
+      "map_heal"
+    ]
+  },
+  "FakeHappyFlower": {
+    "name_cn": "开心小花？？？",
+    "desc": "每X个回合，获得X。",
+    "rarity": "Event",
+    "context": [
+      "passive"
+    ]
+  },
+  "FakeLeesWaffle": {
+    "name_cn": "李家华夫饼？？？",
+    "desc": "拾起时，回复你X%的生命值。",
+    "rarity": "Event",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "FakeMango": {
+    "name_cn": "芒果？？？",
+    "desc": "拾起时，将你的最大生命值提升X。",
+    "rarity": "Event",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "FakeMerchantsRug": {
+    "name_cn": "商人的地毯？？？",
+    "desc": "低劣的仿制品。没有任何作用。",
+    "rarity": "Event",
+    "context": [
+      "passive"
+    ]
+  },
+  "FakeOrichalcum": {
+    "name_cn": "奥利哈钢？？？",
+    "desc": "如果你在回合结束时没有任何格挡，获得X点格挡。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "FakeSneckoEye": {
+    "name_cn": "异蛇之眼？？？",
+    "desc": "每场战斗开始时获得混乱效果。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "FakeStrikeDummy": {
+    "name_cn": "打击木偶？？？",
+    "desc": "名字中有“打击”的卡牌造成X点额外伤害。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "FakeVenerableTeaSet": {
+    "name_cn": "古茶具套装？？？",
+    "desc": "到达休息处后的下一场战斗开始时额外获得X。",
+    "rarity": "Event",
+    "context": [
+      "combat",
+      "map_rest"
+    ]
+  },
+  "FencingManual": {
+    "name_cn": "击剑指南",
+    "desc": "在每场战斗开始时，铸造X。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "FestivePopper": {
+    "name_cn": "节日拉炮",
+    "desc": "在每场战斗开始时，对所有敌人造成X点伤害。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "Fiddle": {
+    "name_cn": "小提琴",
+    "desc": "在每个回合开始时，额外抽X张牌。你在回合进行中不再能抽任何牌。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "ForgottenSoul": {
+    "name_cn": "遗忘之魂",
+    "desc": "每当你消耗一张牌，随机对一名敌人造成X点伤害。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "FragrantMushroom": {
+    "name_cn": "芳香蘑菇",
+    "desc": "拾起时，失去X点生命，然后随机升级X张牌。",
+    "rarity": "Event",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "FresnelLens": {
+    "name_cn": "菲涅耳透镜",
+    "desc": "每当你将一张带有格挡的牌加入你的牌组时，为那张牌附魔：灵巧X",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "FrozenEgg": {
+    "name_cn": "冻结之蛋",
+    "desc": "每当你获得能力牌时，将其升级。",
+    "rarity": "Rare",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "FuneraryMask": {
+    "name_cn": "葬礼面具",
+    "desc": "在每场战斗开始时，将X张灵魂加入你的抽牌堆。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "FurCoat": {
+    "name_cn": "皮草大衣",
+    "desc": "拾起时，随机标记X处战斗。这些战斗中的敌人将只有1点生命。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "GalacticDust": {
+    "name_cn": "星系尘埃",
+    "desc": "每消耗X点X，就获得X格挡。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "GamblingChip": {
+    "name_cn": "赌博筹码",
+    "desc": "在每场战斗开始时，丢弃任意张牌，然后抽相同数量张牌。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "GamePiece": {
+    "name_cn": "棋子",
+    "desc": "每当你打出能力牌时，抽X张牌。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "GhostSeed": {
+    "name_cn": "幽灵种子",
+    "desc": "打击和防御获得虚无。",
+    "rarity": "Shop",
+    "context": [
+      "passive"
+    ]
+  },
+  "Girya": {
+    "name_cn": "壶铃",
+    "desc": "你现在能在休息处获得力量。（最多3次）",
+    "rarity": "Rare",
+    "context": [
+      "combat",
+      "map_rest"
+    ]
+  },
+  "GlassEye": {
+    "name_cn": "玻璃眼珠",
+    "desc": "拾起时，获得2组普通、2组罕见、和1组稀有卡牌奖励。",
+    "rarity": "Ancient",
+    "context": [
+      "card_reward"
+    ]
+  },
+  "Glitter": {
+    "name_cn": "亮片",
+    "desc": "为所有的卡牌奖励附魔：华彩。",
+    "rarity": "Ancient",
+    "context": [
+      "card_reward"
+    ]
+  },
+  "GnarledHammer": {
+    "name_cn": "扭曲锤子",
+    "desc": "拾起时，从你的牌组中选择至多X张攻击牌，附魔：锋利X。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "GoldPlatedCables": {
+    "name_cn": "镀金缆线",
+    "desc": "你最右侧的充能球会额外触发一次被动效果。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "GoldenCompass": {
+    "name_cn": "黄金罗盘",
+    "desc": "拾起时，将第2阶段的地图替换为一条特殊的直道。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "GoldenPearl": {
+    "name_cn": "金色珍珠",
+    "desc": "拾起时，获得X金币。",
+    "rarity": "Ancient",
+    "context": [
+      "map_gold"
+    ]
+  },
+  "Gorget": {
+    "name_cn": "护喉甲",
+    "desc": "在每场战斗开始时，获得X层覆甲。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "GremlinHorn": {
+    "name_cn": "地精之角",
+    "desc": "每当有一名敌人死亡时，获得X并抽X张牌。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "HandDrill": {
+    "name_cn": "手钻",
+    "desc": "每当你突破敌人的格挡时，给予其X层易伤。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "HappyFlower": {
+    "name_cn": "开心小花",
+    "desc": "每X个回合，获得X。",
+    "rarity": "Common",
+    "context": [
+      "passive"
+    ]
+  },
+  "HelicalDart": {
+    "name_cn": "螺线飞镖",
+    "desc": "你每打出一张小刀，就在本回合获得X点敏捷。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "HistoryCourse": {
+    "name_cn": "历史课",
+    "desc": "在你的回合开始时，打出一张你上一回合最后打出的攻击牌或技能牌的复制品。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "HornCleat": {
+    "name_cn": "船夹板",
+    "desc": "在你的第二回合开始时，获得X点格挡。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "IceCream": {
+    "name_cn": "冰淇淋",
+    "desc": "多余的能量可以留到下一回合。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "InfusedCore": {
+    "name_cn": "注能核心",
+    "desc": "在每场战斗开始时，生成X个闪电充能球。",
+    "rarity": "Starter",
+    "context": [
+      "combat"
+    ]
+  },
+  "IntimidatingHelmet": {
+    "name_cn": "骇人头盔",
+    "desc": "每当你打出一张耗能大于等于X的牌，获得X点格挡。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "IronClub": {
+    "name_cn": "铁棒",
+    "desc": "你每打出X张牌，就抽1张牌。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "IvoryTile": {
+    "name_cn": "象牙麻将牌",
+    "desc": "每当你打出一张耗能大于等于X的牌时，获得X。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "JeweledMask": {
+    "name_cn": "宝石面具",
+    "desc": "在每场战斗开始时，将一张随机能力牌从你的抽牌堆放入你的手牌，这张牌可以免费打出。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "JewelryBox": {
+    "name_cn": "珠宝盒",
+    "desc": "拾起时，将1张神化加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "JossPaper": {
+    "name_cn": "金纸",
+    "desc": "你每消耗X张牌，就抽X张牌。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "JuzuBracelet": {
+    "name_cn": "佛珠手链",
+    "desc": "你在X房间中不会再遭遇常规战斗。",
+    "rarity": "Common",
+    "context": [
+      "map_event"
+    ]
+  },
+  "Kifuda": {
+    "name_cn": "木札",
+    "desc": "拾起时，从你的牌组中选择至多X张牌，附魔：伶俐。",
+    "rarity": "Shop",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "Kunai": {
+    "name_cn": "苦无",
+    "desc": "你每在同一回合内打出X张攻击牌，就获得X点敏捷。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "Kusarigama": {
+    "name_cn": "锁镰",
+    "desc": "你每在同一回合内打出X张攻击牌，就随机对一名敌人造成X点伤害。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "Lantern": {
+    "name_cn": "灯笼",
+    "desc": "在每场战斗的第一回合获得X。",
+    "rarity": "Common",
+    "context": [
+      "passive"
+    ]
+  },
+  "LargeCapsule": {
+    "name_cn": "巨大扭蛋",
+    "desc": "拾起时，获得X件随机遗物。额外将一对打击和防御，加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "LastingCandy": {
+    "name_cn": "吃不完的糖",
+    "desc": "每两场战斗，你的卡牌奖励就会额外包含一张能力牌。",
+    "rarity": "Rare",
+    "context": [
+      "card_reward"
+    ]
+  },
+  "LavaLamp": {
+    "name_cn": "熔岩灯",
+    "desc": "在战斗结束时，如果你没有受伤，则升级你的所有卡牌奖励。",
+    "rarity": "Shop",
+    "context": [
+      "card_reward",
+      "map_rest",
+      "map_heal"
+    ]
+  },
+  "LavaRock": {
+    "name_cn": "熔岩石",
+    "desc": "第一阶段的Boss敌人额外掉落X件遗物。",
+    "rarity": "Ancient",
+    "context": [
+      "map_elite",
+      "map_gold"
+    ]
+  },
+  "LeadPaperweight": {
+    "name_cn": "铅制镇纸",
+    "desc": "拾起时，从2张无色牌中选择1张加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "LeafyPoultice": {
+    "name_cn": "树叶药膏",
+    "desc": "拾起时，变化你的1张打击和1张防御，然后失去X点最大生命。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "LeesWaffle": {
+    "name_cn": "李家华夫饼",
+    "desc": "拾起时，将你的最大生命值提升X点，并回复所有生命。",
+    "rarity": "Shop",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "LetterOpener": {
+    "name_cn": "开信刀",
+    "desc": "你每在同一回合内打出X张技能牌，就对所有敌人造成X点伤害。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "LizardTail": {
+    "name_cn": "蜥蜴尾巴",
+    "desc": "当你要被杀死时，免死并回复到最大生命值的X%（仅能起效一次）。",
+    "rarity": "Rare",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "LoomingFruit": {
+    "name_cn": "布质果实",
+    "desc": "拾起时，将你的最大生命值提升X。",
+    "rarity": "Ancient",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "LordsParasol": {
+    "name_cn": "领主阳伞",
+    "desc": "当你遇见商人时，立刻获得他所出售的所有物品。",
+    "rarity": "Ancient",
+    "context": [
+      "passive"
+    ]
+  },
+  "LostCoffer": {
+    "name_cn": "失物盒",
+    "desc": "拾起时，获得1组卡牌奖励和1瓶随机药水。",
+    "rarity": "Ancient",
+    "context": [
+      "potion",
+      "card_reward"
+    ]
+  },
+  "LostWisp": {
+    "name_cn": "迷失鬼火",
+    "desc": "你每打出一张能力牌，就对所有敌人造成X点伤害。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "LuckyFysh": {
+    "name_cn": "招财异鱼",
+    "desc": "每当你将一张卡牌加入你的牌组时，获得X金币。",
+    "rarity": "Uncommon",
+    "context": [
+      "map_gold"
+    ]
+  },
+  "LunarPastry": {
+    "name_cn": "月亮糕点",
+    "desc": "在你的回合结束时，获得X。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "Mango": {
+    "name_cn": "芒果",
+    "desc": "拾起时，将你的最大生命值提升X。",
+    "rarity": "Rare",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "MassiveScroll": {
+    "name_cn": "巨大卷轴",
+    "desc": "拾起时，从3张多人游戏无色牌中选择1张加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "MawBank": {
+    "name_cn": "巨口储蓄罐",
+    "desc": "每攀爬一层楼层，就获得X金币。一旦在商店中花费金币就会使其失效。",
+    "rarity": "Event",
+    "context": [
+      "map_shop",
+      "map_gold"
+    ]
+  },
+  "MealTicket": {
+    "name_cn": "餐券",
+    "desc": "每当你进入商店房间时，回复X点生命。",
+    "rarity": "Common",
+    "context": [
+      "map_shop",
+      "map_heal"
+    ]
+  },
+  "MeatCleaver": {
+    "name_cn": "切肉刀",
+    "desc": "你可以在休息处进行烹饪。",
+    "rarity": "Ancient",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "MeatOnTheBone": {
+    "name_cn": "带骨肉",
+    "desc": "如果你在战斗结束时生命值等于或低于X%，回复X点生命。",
+    "rarity": "Rare",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "MembershipCard": {
+    "name_cn": "会员卡",
+    "desc": "所有商品打折X%！",
+    "rarity": "Shop",
+    "context": [
+      "map_shop"
+    ]
+  },
+  "MercuryHourglass": {
+    "name_cn": "水银沙漏",
+    "desc": "在你的回合开始时，对所有敌人造成X点伤害。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "Metronome": {
+    "name_cn": "节拍器",
+    "desc": "每场战斗中你首次生成X个充能球时，对所有敌人造成X点伤害。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "MiniRegent": {
+    "name_cn": "迷你储君",
+    "desc": "每回合你第一次花费X时，获得X点力量。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "MiniatureCannon": {
+    "name_cn": "微型大炮",
+    "desc": "升级的攻击牌额外造成X点伤害。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat",
+      "map_rest"
+    ]
+  },
+  "MiniatureTent": {
+    "name_cn": "微型帐篷",
+    "desc": "你可以在休息处选择任意数量的选项。",
+    "rarity": "Shop",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "MoltenEgg": {
+    "name_cn": "熔火之蛋",
+    "desc": "每当你获得攻击牌时，将其升级。",
+    "rarity": "Rare",
+    "context": [
+      "combat",
+      "map_rest"
+    ]
+  },
+  "MrStruggles": {
+    "name_cn": "挣扎先生",
+    "desc": "在你的回合开始时，对所有敌人造成等量于当前回合数的伤害。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "MummifiedHand": {
+    "name_cn": "干瘪之手",
+    "desc": "你每打出一张能力牌，手牌中就有一张随机牌在这个回合可以免费打出。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "MusicBox": {
+    "name_cn": "音乐盒",
+    "desc": "将你每回合打出的第一张攻击牌的一张虚无复制品加入你的手牌。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "MysticLighter": {
+    "name_cn": "神秘打火机",
+    "desc": "有附魔的攻击牌额外造成X点伤害。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "NeowsTorment": {
+    "name_cn": "涅奥的苦痛",
+    "desc": "拾起时，将1张涅奥之怒加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "NewLeaf": {
+    "name_cn": "新叶",
+    "desc": "拾起时，变化X张牌。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "NinjaScroll": {
+    "name_cn": "忍术卷轴",
+    "desc": "戦闘開始時、ナイフをX枚手札に加える",
+    "rarity": "Shop",
+    "context": [
+      "passive"
+    ]
+  },
+  "Nunchaku": {
+    "name_cn": "双截棍",
+    "desc": "你每打出X张攻击牌，获得X。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "NutritiousOyster": {
+    "name_cn": "营养牡蛎",
+    "desc": "拾起时，将你的最大生命值提升X。",
+    "rarity": "Ancient",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "NutritiousSoup": {
+    "name_cn": "营养汤",
+    "desc": "拾起时，为你牌组中的所有“打击”附魔：特兹卡塔拉的余烬",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "OddlySmoothStone": {
+    "name_cn": "意外光滑的石头",
+    "desc": "在每场战斗开始时，获得X点敏捷。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "OldCoin": {
+    "name_cn": "古钱币",
+    "desc": "拾起时，获得X金币。",
+    "rarity": "Rare",
+    "context": [
+      "map_gold"
+    ]
+  },
+  "OrangeDough": {
+    "name_cn": "橙色团块",
+    "desc": "在每场战斗开始时，将X张随机无色牌加入你的手牌。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "Orichalcum": {
+    "name_cn": "奥利哈钢",
+    "desc": "如果你在回合结束时没有任何格挡，获得X点格挡。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "OrnamentalFan": {
+    "name_cn": "精致折扇",
+    "desc": "你每在同一回合内打出X张攻击牌，就获得X点格挡。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "Orrery": {
+    "name_cn": "星系仪",
+    "desc": "拾起时，获得X组卡牌奖励",
+    "rarity": "Shop",
+    "context": [
+      "card_reward"
+    ]
+  },
+  "PaelsBlood": {
+    "name_cn": "佩尔之血",
+    "desc": "在你的回合开始时，额外抽X张牌",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "PaelsClaw": {
+    "name_cn": "佩尔之爪",
+    "desc": "拾起时，为所有的“防御”附魔：X。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "PaelsEye": {
+    "name_cn": "佩尔之眼",
+    "desc": "你在每场战斗中第一次没有打出任何牌就结束回合时，消耗所有手牌然后进行一个额外回合。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "PaelsFlesh": {
+    "name_cn": "佩尔之肉",
+    "desc": "从你的第3回合开始，在回合开始时额外获得X。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "PaelsGrowth": {
+    "name_cn": "佩尔的增生组织",
+    "desc": "拾起时，从牌组中选择一张牌，为其附魔：X。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "PaelsHorn": {
+    "name_cn": "佩尔之角",
+    "desc": "拾起时，将2张放松加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "PaelsLegion": {
+    "name_cn": "佩尔的士兵",
+    "desc": "将你从一张卡牌内获得的格挡翻倍，然后休眠X个回合。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "PaelsTears": {
+    "name_cn": "佩尔之泪",
+    "desc": "如果你在拥有未花费的X情况下结束回合，则下个回合额外获得X。",
+    "rarity": "Ancient",
+    "context": [
+      "passive"
+    ]
+  },
+  "PaelsTooth": {
+    "name_cn": "佩尔之牙",
+    "desc": "拾起时，从你的牌组中选择X张牌移除。在每场战斗结束时，将其中随机1张牌升级然后返还。X|}",
+    "rarity": "Ancient",
+    "context": [
+      "map_rest",
+      "map_heal"
+    ]
+  },
+  "PaelsWing": {
+    "name_cn": "佩尔之翼",
+    "desc": "你可以将你的卡牌奖励献祭给佩尔。每献祭X次，就能获得一件遗物。",
+    "rarity": "Ancient",
+    "context": [
+      "card_reward"
+    ]
+  },
+  "PandorasBox": {
+    "name_cn": "潘多拉魔盒",
+    "desc": "变化所有“打击”和“防御”。",
+    "rarity": "Ancient",
+    "context": [
+      "passive"
+    ]
+  },
+  "Pantograph": {
+    "name_cn": "缩放仪",
+    "desc": "在Boss战开始时，回复X点生命值。",
+    "rarity": "Uncommon",
+    "context": [
+      "map_elite",
+      "map_heal"
+    ]
+  },
+  "PaperKrane": {
+    "name_cn": "纸鹤",
+    "desc": "有虚弱状态的敌人造成的伤害降低40%而非25%。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "PaperPhrog": {
+    "name_cn": "纸蛙",
+    "desc": "有易伤状态的敌人受到的伤害增加75%而非50%。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "ParryingShield": {
+    "name_cn": "招架盾",
+    "desc": "如果你在回合结束时拥有至少X点格挡，则对随机敌人造成X点伤害。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "Pear": {
+    "name_cn": "梨子",
+    "desc": "拾起时，将你的最大生命值提升X。",
+    "rarity": "Uncommon",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "PenNib": {
+    "name_cn": "钢笔尖",
+    "desc": "你每打出的第10张攻击牌将会造成双倍伤害。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "Pendulum": {
+    "name_cn": "摆动球",
+    "desc": "每当你将抽牌堆洗牌时，抽1张牌。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "Permafrost": {
+    "name_cn": "永冻冰晶",
+    "desc": "当你在战斗中第一次打出能力牌时，获得X点格挡。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "PetrifiedToad": {
+    "name_cn": "石化蟾蜍",
+    "desc": "在每场战斗开始时，获得一瓶药水形状的石头",
+    "rarity": "Uncommon",
+    "context": [
+      "combat",
+      "potion"
+    ]
+  },
+  "PhilosophersStone": {
+    "name_cn": "贤者之石",
+    "desc": "在每回合开始时获得X。所有敌人初始获得X点力量。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "PhylacteryUnbound": {
+    "name_cn": "无界命匣",
+    "desc": "在每场战斗开始时，召唤X。在你的回合开始时，召唤X。",
+    "rarity": "Starter",
+    "context": [
+      "combat"
+    ]
+  },
+  "Planisphere": {
+    "name_cn": "活动星图",
+    "desc": "每当你进入？房间的时候，回复X点生命。",
+    "rarity": "Uncommon",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "Pocketwatch": {
+    "name_cn": "怀表",
+    "desc": "当你在本回合打出的牌少于等于X张时，则在你的下个回合开始时额外抽X张牌。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "PollinousCore": {
+    "name_cn": "花粉核心",
+    "desc": "每X个回合，额外抽X张牌。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "Pomander": {
+    "name_cn": "橙型香盒",
+    "desc": "拾起时，升级一张牌。",
+    "rarity": "Ancient",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "PotionBelt": {
+    "name_cn": "药水腰带",
+    "desc": "拾起时，获得X个药水栏位。",
+    "rarity": "Common",
+    "context": [
+      "potion"
+    ]
+  },
+  "PowerCell": {
+    "name_cn": "能量电池",
+    "desc": "在每场战斗开始时，将X张耗能为0的卡牌从你的抽牌堆放入你的手牌。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "PrayerWheel": {
+    "name_cn": "转经轮",
+    "desc": "普通敌人额外掉落一组卡牌奖励。",
+    "rarity": "Rare",
+    "context": [
+      "card_reward",
+      "map_gold"
+    ]
+  },
+  "PrecariousShears": {
+    "name_cn": "松动羊毛剪",
+    "desc": "拾起时，从你的牌组中移除X张牌，并受到X点伤害。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "PreciseScissors": {
+    "name_cn": "精准剪刀",
+    "desc": "拾起时，从你的牌组中移除X张牌。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "PreservedFog": {
+    "name_cn": "腌制活雾",
+    "desc": "拾起时，从你的牌组中移除X张牌。将一张愚行加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "PrismaticGem": {
+    "name_cn": "棱彩宝石",
+    "desc": "在每个回合开始时获得X。卡牌奖励现在会包含其他颜色的卡牌。",
+    "rarity": "Ancient",
+    "context": [
+      "combat",
+      "card_reward"
+    ]
+  },
+  "PumpkinCandle": {
+    "name_cn": "南瓜蜡烛",
+    "desc": "在每个回合开始时获得X。这件遗物将在第3阶段开始时熄灭。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "PunchDagger": {
+    "name_cn": "拳刃",
+    "desc": "拾起时，选择一张攻击牌为它附魔：动量X。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "RadiantPearl": {
+    "name_cn": "发光珍珠",
+    "desc": "在每场战斗开始时，将X张冷光加入你的手牌。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "RainbowRing": {
+    "name_cn": "彩虹戒指",
+    "desc": "每回合，你第一次打出攻击牌、技能牌和能力牌各一张时，获得X点力量和X点敏捷。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "RazorTooth": {
+    "name_cn": "剃刀牙",
+    "desc": "你打出攻击牌和技能牌时，将其在本场战斗内升级。",
+    "rarity": "Rare",
+    "context": [
+      "combat",
+      "map_rest"
+    ]
+  },
+  "RedMask": {
+    "name_cn": "红面具",
+    "desc": "在每场战斗开始时，给于所有敌人X层虚弱。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "RedSkull": {
+    "name_cn": "红头骨",
+    "desc": "当你的生命值低于或等于X%时，你额外获得X点力量",
+    "rarity": "Common",
+    "context": [
+      "combat",
+      "map_heal"
+    ]
+  },
+  "RegalPillow": {
+    "name_cn": "皇家枕头",
+    "desc": "在休息时，额外回复X点生命。",
+    "rarity": "Common",
+    "context": [
+      "map_rest",
+      "map_heal"
+    ]
+  },
+  "Regalite": {
+    "name_cn": "君王矿石",
+    "desc": "每当你生成一张无色牌时，获得X点格挡。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "ReptileTrinket": {
+    "name_cn": "爬行动物饰品",
+    "desc": "当你使用药水时，在本回合获得X力量。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat",
+      "potion"
+    ]
+  },
+  "RingOfTheDrake": {
+    "name_cn": "长蛇戒指",
+    "desc": "在战斗开始时的前X个回合，你额外抽X张牌。",
+    "rarity": "Starter",
+    "context": [
+      "combat"
+    ]
+  },
+  "RingOfTheSnake": {
+    "name_cn": "蛇之戒指",
+    "desc": "在每场战斗开始时，额外抽X张牌。",
+    "rarity": "Starter",
+    "context": [
+      "combat"
+    ]
+  },
+  "RingingTriangle": {
+    "name_cn": "三角铃鼓",
+    "desc": "在每场战斗的第一回合保留你的手牌。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "RippleBasin": {
+    "name_cn": "波纹水盆",
+    "desc": "如果你在本回合中没有打出过攻击牌，则获得X点格挡。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "RoyalPoison": {
+    "name_cn": "王室猛毒",
+    "desc": "在每场战斗开始时，失去X点生命。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "RoyalStamp": {
+    "name_cn": "王室印章",
+    "desc": "拾起时，从牌组中选择一张攻击牌或技能牌，为它附魔：X。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "RuinedHelmet": {
+    "name_cn": "损毁头盔",
+    "desc": "你在每场战斗中第一次获得的力量值翻倍。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "RunicCapacitor": {
+    "name_cn": "符文电容器",
+    "desc": "每场战斗开始时，获得X个额外充能球栏位。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "RunicPyramid": {
+    "name_cn": "符文金字塔",
+    "desc": "你在回合结束时不再自动丢弃所有手牌。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "Sai": {
+    "name_cn": "钗",
+    "desc": "在你的回合开始时，获得X点格挡。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "SandCastle": {
+    "name_cn": "沙堡",
+    "desc": "拾起时，随机升级X张牌。",
+    "rarity": "Ancient",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "ScreamingFlagon": {
+    "name_cn": "尖叫酒壶",
+    "desc": "如果你在回合结束时没有任何手牌，则对所有敌人造成X点伤害。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "ScrollBoxes": {
+    "name_cn": "卷轴箱",
+    "desc": "拾起时，失去所有金币，并从2个卡牌包中选择1包加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "map_gold"
+    ]
+  },
+  "SeaGlass": {
+    "name_cn": "海玻璃",
+    "desc": "查看X张来自X|其他角色}的牌。从中选择任意数量的卡牌加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "passive"
+    ]
+  },
+  "SealOfGold": {
+    "name_cn": "黄金印",
+    "desc": "在你的回合开始时，花费X金币来获得X。",
+    "rarity": "Ancient",
+    "context": [
+      "combat",
+      "map_gold"
+    ]
+  },
+  "SelfFormingClay": {
+    "name_cn": "自成型黏土",
+    "desc": "每当你在战斗中失去生命，就在下回合获得X点格挡。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "SereTalon": {
+    "name_cn": "原初之爪",
+    "desc": "拾起时，将X张随机诅咒牌和X张许愿加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "Shovel": {
+    "name_cn": "铲子",
+    "desc": "现在你可以在休息处挖掘遗物。",
+    "rarity": "Rare",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "Shuriken": {
+    "name_cn": "手里剑",
+    "desc": "你每在同一回合内打出X张攻击牌，获得X点力量。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "SignetRing": {
+    "name_cn": "图章戒指",
+    "desc": "拾起时，获得X金币。",
+    "rarity": "Ancient",
+    "context": [
+      "map_gold"
+    ]
+  },
+  "SilverCrucible": {
+    "name_cn": "白银熔炉",
+    "desc": "你遇到的前X组卡牌奖励将是被升级过的。你打开的第一个宝箱将是空的",
+    "rarity": "Ancient",
+    "context": [
+      "map_rest",
+      "card_reward"
+    ]
+  },
+  "SlingOfCourage": {
+    "name_cn": "勇气投石索",
+    "desc": "在与精英敌人战斗时，获得X点力量。",
+    "rarity": "Shop",
+    "context": [
+      "combat",
+      "map_elite"
+    ]
+  },
+  "SmallCapsule": {
+    "name_cn": "小型扭蛋",
+    "desc": "拾起时，获得一件随机遗物。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "SneckoEye": {
+    "name_cn": "异蛇之眼",
+    "desc": "每回合多抽X张牌。每场战斗开始时获得混乱效果。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "SneckoSkull": {
+    "name_cn": "异蛇头骨",
+    "desc": "每当你给予敌人中毒时，所给予的中毒层数增加X层。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "Sozu": {
+    "name_cn": "添水",
+    "desc": "你无法再获得药水。在每回合开始时获得X。",
+    "rarity": "Ancient",
+    "context": [
+      "combat",
+      "potion"
+    ]
+  },
+  "SparklingRouge": {
+    "name_cn": "闪亮口红",
+    "desc": "在你的第3回合开始时，获得X点力量和X点敏捷。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "SpikedGauntlets": {
+    "name_cn": "带刺手甲",
+    "desc": "在每回合开始时获得X。能力牌的耗能增加1X。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "StoneCalendar": {
+    "name_cn": "历石",
+    "desc": "在第X回合结束时，对所有敌人造成X点伤害。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "StoneCracker": {
+    "name_cn": "碎石钻",
+    "desc": "在Boss战开始时，在本场战斗中随机升级你抽牌堆中的X张牌。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat",
+      "map_elite",
+      "map_rest"
+    ]
+  },
+  "StoneHumidifier": {
+    "name_cn": "石炉加湿器",
+    "desc": "每当你在休息处休息时，将你的最大生命值提升X点。",
+    "rarity": "Ancient",
+    "context": [
+      "map_rest",
+      "map_heal"
+    ]
+  },
+  "Storybook": {
+    "name_cn": "故事书",
+    "desc": "拾起时，将1张至亮之焰添加到你的牌组中。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "Strawberry": {
+    "name_cn": "草莓",
+    "desc": "拾起时，将你的最大生命值提升X。",
+    "rarity": "Common",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "StrikeDummy": {
+    "name_cn": "打击木偶",
+    "desc": "名字中有“打击”的卡牌造成X点额外伤害。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "SturdyClamp": {
+    "name_cn": "坚固钳子",
+    "desc": "可以跨回合保留最多X点格挡。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "SwordOfJade": {
+    "name_cn": "玉之剑",
+    "desc": "在每场战斗开始时，获得X点力量。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "SwordOfStone": {
+    "name_cn": "石之剑",
+    "desc": "在击败X名精英敌人之后将变化为一件强力遗物。",
+    "rarity": "Event",
+    "context": [
+      "map_elite"
+    ]
+  },
+  "SymbioticVirus": {
+    "name_cn": "共生病毒",
+    "desc": "在每场战斗开始时，生成X个黑暗充能球。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "TanxsWhistle": {
+    "name_cn": "坦克斯的哨子",
+    "desc": "拾起时，将1张吹哨加入你的牌组。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "TeaOfDiscourtesy": {
+    "name_cn": "无礼之茶",
+    "desc": "在下一场战斗开始时，将X张眩晕放入你的抽牌堆。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "TheAbacus": {
+    "name_cn": "算盘",
+    "desc": "你每次将抽牌堆洗牌时，获得X点格挡。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "TheBoot": {
+    "name_cn": "发条靴",
+    "desc": "每当你造成小于等于X点未被格挡的攻击伤害时，将伤害提升为X。",
+    "rarity": "Event",
+    "context": [
+      "combat"
+    ]
+  },
+  "TheCourier": {
+    "name_cn": "送货员",
+    "desc": "商人的卡牌、遗物和药水不再会卖光，并且所有商品打折X%。",
+    "rarity": "Rare",
+    "context": [
+      "map_shop",
+      "potion"
+    ]
+  },
+  "ThrowingAxe": {
+    "name_cn": "投斧",
+    "desc": "你在每场战斗中打出的第一张牌会多打出一次。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "Tingsha": {
+    "name_cn": "铜钹",
+    "desc": "你每在你的回合丢弃一张牌，就对一名随机敌人造成X点伤害。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "TinyMailbox": {
+    "name_cn": "小邮箱",
+    "desc": "每当你休息时，获得一瓶随机药水。",
+    "rarity": "Common",
+    "context": [
+      "map_rest",
+      "potion"
+    ]
+  },
+  "ToastyMittens": {
+    "name_cn": "烘焙手套",
+    "desc": "在你的回合开始时，消耗你抽牌堆顶部的牌并获得X点力量。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "Toolbox": {
+    "name_cn": "工具箱",
+    "desc": "在每场战斗开始时，从X张随机无色牌中选择1张加入你的手牌。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "TouchOfOrobas": {
+    "name_cn": "欧洛巴斯之触",
+    "desc": "拾起时，将X替换为X|你的初始遗物替换为先古版本}。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "ToughBandages": {
+    "name_cn": "结实绷带",
+    "desc": "你每在你的回合丢弃一张牌，就获得X点格挡。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "ToxicEgg": {
+    "name_cn": "毒素之蛋",
+    "desc": "每当你获得技能牌时，将其升级。",
+    "rarity": "Rare",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "ToyBox": {
+    "name_cn": "玩具盒",
+    "desc": "拾起时，获得X件蜡制遗物。每经过X场战斗，你最左侧的蜡制遗物将会融化。",
+    "rarity": "Ancient",
+    "context": [
+      "pickup_only"
+    ]
+  },
+  "TriBoomerang": {
+    "name_cn": "三刃回旋镖",
+    "desc": "从你的牌组中选择X张攻击牌。为这些牌附魔：本能。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "TungstenRod": {
+    "name_cn": "钨合金棍",
+    "desc": "你每次失去生命时，减少失去的生命值X点。",
+    "rarity": "Rare",
+    "context": [
+      "map_heal"
+    ]
+  },
+  "TuningFork": {
+    "name_cn": "音叉",
+    "desc": "你每打出X张技能牌，获得X点格挡。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "TwistedFunnel": {
+    "name_cn": "扭曲漏斗",
+    "desc": "在每场战斗开始时，给予所有敌人X层中毒。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "UnceasingTop": {
+    "name_cn": "不休陀螺",
+    "desc": "在你的回合，当你没有手牌时，抽一张牌。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "UndyingSigil": {
+    "name_cn": "不死符文",
+    "desc": "当敌人的灾厄层数大于等于其生命值时，它造成的伤害降低50%。",
+    "rarity": "Shop",
+    "context": [
+      "combat",
+      "map_heal"
+    ]
+  },
+  "UnsettlingLamp": {
+    "name_cn": "不安油灯",
+    "desc": "你在每场战斗中第一次打出能给予敌人负面状态的牌时，将其效果翻倍。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "Vajra": {
+    "name_cn": "金刚杵",
+    "desc": "在每场战斗开始时，获得X点力量。",
+    "rarity": "Common",
+    "context": [
+      "combat"
+    ]
+  },
+  "Vambrace": {
+    "name_cn": "臂甲",
+    "desc": "每场战斗中，你第一次从卡牌中获得的格挡值翻倍。",
+    "rarity": "Uncommon",
+    "context": [
+      "combat"
+    ]
+  },
+  "VelvetChoker": {
+    "name_cn": "天鹅绒颈圈",
+    "desc": "在每回合开始时获得X。你每回合不能打出超过X张牌。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "VenerableTeaSet": {
+    "name_cn": "古茶具套装",
+    "desc": "到达休息处后的下一场战斗开始时额外获得X。",
+    "rarity": "Common",
+    "context": [
+      "combat",
+      "map_rest"
+    ]
+  },
+  "VeryHotCocoa": {
+    "name_cn": "烫嘴可可",
+    "desc": "在每场战斗的第一回合额外获得X。",
+    "rarity": "Ancient",
+    "context": [
+      "passive"
+    ]
+  },
+  "VexingPuzzlebox": {
+    "name_cn": "烦人机关盒",
+    "desc": "在每场战斗开始时，将一张随机卡牌加入你的手牌。这张牌的耗能变为0X。",
+    "rarity": "Rare",
+    "context": [
+      "combat"
+    ]
+  },
+  "VitruvianMinion": {
+    "name_cn": "维特鲁威仆从",
+    "desc": "名字中有“仆从”的卡牌造成双倍的伤害与格挡。",
+    "rarity": "Shop",
+    "context": [
+      "combat"
+    ]
+  },
+  "WarHammer": {
+    "name_cn": "战锤",
+    "desc": "每当你击败一名精英敌人的时候，随机升级X张牌。",
+    "rarity": "Ancient",
+    "context": [
+      "map_rest",
+      "map_elite"
+    ]
+  },
+  "WarPaint": {
+    "name_cn": "战纹涂料",
+    "desc": "拾起时，随机升级X张技能牌。",
+    "rarity": "Common",
+    "context": [
+      "map_rest"
+    ]
+  },
+  "Whetstone": {
+    "name_cn": "磨刀石",
+    "desc": "拾起时，随机升级X张攻击牌。",
+    "rarity": "Common",
+    "context": [
+      "combat",
+      "map_rest"
+    ]
+  },
+  "WhisperingEarring": {
+    "name_cn": "低语耳环",
+    "desc": "在每个回合开始时，获得X。瓦库将接管你的第一回合。",
+    "rarity": "Ancient",
+    "context": [
+      "combat"
+    ]
+  },
+  "WhiteBeastStatue": {
+    "name_cn": "白兽雕像",
+    "desc": "战斗结束后必定掉落药水。",
+    "rarity": "Rare",
+    "context": [
+      "potion",
+      "map_gold",
+      "map_heal"
+    ]
+  },
+  "WhiteStar": {
+    "name_cn": "白星",
+    "desc": "精英敌人额外掉落一组稀有卡牌奖励。",
+    "rarity": "Rare",
+    "context": [
+      "card_reward",
+      "map_elite",
+      "map_gold"
+    ]
+  },
+  "WingCharm": {
+    "name_cn": "羽翼护符",
+    "desc": "每组卡牌奖励中，都会有随机一张牌被附魔：迅捷X。",
+    "rarity": "Shop",
+    "context": [
+      "card_reward"
+    ]
+  },
+  "WongoCustomerAppreciationBadge": {
+    "name_cn": "旺购客户感恩徽章",
+    "desc": "没有任何作用。",
+    "rarity": "Event",
+    "context": [
+      "passive"
+    ]
+  },
+  "WongosMysteryTicket": {
+    "name_cn": "旺购神秘券",
+    "desc": "在X场战斗后，获得随机X件遗物。",
+    "rarity": "Event",
+    "context": [
+      "passive"
+    ]
+  },
+  "YummyCookie": {
+    "name_cn": "美味饼干",
+    "desc": "拾起时，升级X张牌。",
+    "rarity": "Ancient",
+    "context": [
+      "map_rest"
+    ]
+  }
+}

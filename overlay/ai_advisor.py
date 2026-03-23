@@ -4,9 +4,9 @@
 """
 import threading
 import time
-import subprocess
+# subprocess — 已迁移到 LLMClient
 import os
-import shutil
+# shutil — 已迁移到 LLMClient
 import json
 import re
 from collections import Counter
@@ -16,15 +16,88 @@ import requests
 import html as _html
 
 from overlay.constants import (
-    API_URL, LLM_CLI, CARD_DICT, STRATEGY_DB, COMBAT_BASICS,
-    SYSTEM_PROMPT_FILE, INTENT_CN,
+    API_URL, LLM_CLI, STRATEGY_DB, COMBAT_BASICS,
     _cn_power, _cn_relic, _cn_potion,
     PARCH, GOLD, GREEN,
 )
 
 
 class AIAdvisorMixin:
-    _system_prompt_cache = None
+
+    # ══════════════════════════════════════════
+    #  KNOWLEDGE DATABASES (loaded once, data-driven)
+    # ══════════════════════════════════════════
+    _power_db = None
+    _relic_db = None
+    _potion_db = None
+
+    @classmethod
+    def _load_knowledge_db(cls, attr, filename):
+        """Generic lazy-load for JSON knowledge bases."""
+        if getattr(cls, attr) is None:
+            path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                "knowledge", filename)
+            try:
+                with open(path) as f:
+                    setattr(cls, attr, json.load(f))
+            except Exception:
+                setattr(cls, attr, {})
+        return getattr(cls, attr)
+
+    def _explain_powers(self, powers_list):
+        """Look up effect descriptions for active powers. Returns prompt-ready string."""
+        db = self._load_knowledge_db('_power_db', 'power_effects.json')
+        seen, lines = set(), []
+        for p in powers_list:
+            pid = p.get("id", "")
+            pname = _cn_power(p)
+            amt = p.get("amount", 0)
+            if pname in seen: continue
+            seen.add(pname)
+            info = db.get(pid)
+            if not info:
+                info = next((v for v in db.values() if v.get("name_cn") == pname), None)
+            if info and info.get("effect"):
+                lines.append(f"{pname}({amt}): {info['effect']}")
+        return "\n".join(lines)
+
+    def _explain_relics(self, relic_list, context="combat"):
+        """Look up relic effects relevant to a given context.
+        context: "combat" / "map" (matches map_*) / "rest" / "shop" / "card_reward" / "potion".
+        Only includes relics the player actually has AND that matter for the context."""
+        db = self._load_knowledge_db('_relic_db', 'relic_effects.json')
+        lines = []
+        relic_ids = {r.get("id", r.get("name", "")) for r in relic_list}
+        relic_names = {r.get("name", "") for r in relic_list}
+        for rid, rdata in db.items():
+            cn = rdata.get("name_cn", "")
+            if rid not in relic_ids and cn not in relic_names:
+                continue
+            relic_contexts = rdata.get("context", [])
+            # "map" matches any map_* sub-context
+            if context == "map":
+                if not any(c.startswith("map_") for c in relic_contexts):
+                    continue
+            elif context not in relic_contexts:
+                continue
+            lines.append(f"{cn}: {rdata['desc']}")
+        return "\n".join(lines)
+
+    def _explain_potions(self, potion_list):
+        """Look up potion effects for AI decision making."""
+        db = self._load_knowledge_db('_potion_db', 'potion_effects.json')
+        lines = []
+        for p in potion_list:
+            pname = p.get("name", "")
+            pid = p.get("id", "")
+            if not pname or pname == "None": continue
+            info = db.get(pid)
+            if not info:
+                info = next((v for v in db.values() if v.get("name_cn") == pname), None)
+            cn = _cn_potion(pname) if pname else ""
+            desc = info.get("desc", "") if info else ""
+            lines.append(f"{cn}: {desc}" if desc else cn)
+        return "\n".join(lines)
 
     # ───── 智能上下文构建器（0 token 查表）─────
 
@@ -83,6 +156,13 @@ class AIAdvisorMixin:
                 if pivots: score += 3
 
                 if score >= 2:  # 只保留有意义的
+                    # Extract core card Chinese names
+                    core_cards_cn = []
+                    for cc in adata.get("core_cards", adata.get("key_cards", [])):
+                        if isinstance(cc, dict):
+                            cn = cc.get("name_cn", cc.get("name", ""))
+                            if cn:
+                                core_cards_cn.append(cn)
                     relevant.append({
                         "name": aname,
                         "tier": tier,
@@ -92,6 +172,7 @@ class AIAdvisorMixin:
                         "win": adata.get("win_condition", "")[:50],
                         "weakness": adata.get("weakness", "")[:50],
                         "combos": adata.get("key_combos", [])[:2],
+                        "core_cards": core_cards_cn,
                         "score": score
                     })
 
@@ -100,7 +181,10 @@ class AIAdvisorMixin:
             if relevant:
                 lines = [f"[{char} A{ascension} 流派参考]"]
                 for r in relevant[:3]:  # 最多3个
-                    line = f"  {r['name']}({r['tier']}): {r['win']}"
+                    core_str = "、".join(r.get('core_cards', [])[:5])
+                    line = f"  {r['name']}({r['tier']})"
+                    if core_str:
+                        line += f" 核心牌:{core_str}"
                     if r['relic_match']:
                         line += f" | 遗物协同: {', '.join(r['relic_match'][:2])}"
                     if r['pivots']:
@@ -268,32 +352,13 @@ class AIAdvisorMixin:
 
         return "\n\n".join(parts) if parts else ""
 
-    def _ask_llm(self, prompt):
-        # 检查 LLM 是否可用
-        if not os.path.exists(LLM_CLI) and not shutil.which(LLM_CLI):
-            raise RuntimeError(f"LLM 未找到：{LLM_CLI}\n请检查 config.json 中的 llm_cli 路径")
-        cmd = [LLM_CLI, "--print", "--permission-mode", "bypassPermissions"]
-        # 加载 system prompt（缓存读一次）
-        if self._system_prompt_cache is None:
-            try:
-                if os.path.exists(SYSTEM_PROMPT_FILE):
-                    with open(SYSTEM_PROMPT_FILE) as f:
-                        self.__class__._system_prompt_cache = f.read().strip()
-                else:
-                    self.__class__._system_prompt_cache = ""
-            except Exception:
-                self.__class__._system_prompt_cache = ""
-        if self._system_prompt_cache:
-            cmd += ["--system-prompt", self._system_prompt_cache]
-        try:
-            r = subprocess.run(cmd, input=prompt, capture_output=True, text=True, timeout=60)
-        except FileNotFoundError:
-            raise RuntimeError(f"LLM 无法执行：{LLM_CLI}")
-        except subprocess.TimeoutExpired:
-            raise RuntimeError("分析超时（45秒），请重试")
-        if r.returncode != 0:
-            raise RuntimeError(r.stderr.strip() or "调用失败")
-        return r.stdout.strip()
+    # _ask_llm 已迁移到 self.llm.ask()（LLMClient）
+
+    def _translate_card_names(self, text):
+        """委托给 CardDB.translate()。"""
+        if hasattr(self, 'cards'):
+            return self.cards.translate(text)
+        return text
 
     @staticmethod
     def _parse_intent_damage(intent):
@@ -337,39 +402,32 @@ class AIAdvisorMixin:
         return int(m_dmg.group(1)) if m_dmg else 0, int(m_blk.group(1)) if m_blk else 0
 
     def _fmt_intent(self, intents):
-        """格式化敌人意图，精确展示攻击数值。"""
+        """格式化敌人意图为纯文本（给AI prompt用）。
+        复用 _parse_single_intent 的解析逻辑，并追加总伤计算。"""
         parts = []
         for i in intents:
-            label = (i.get("label") or "").strip()
-            itype = i.get("type", "")
+            text, _ = self._parse_single_intent(i)
+            if text is None:
+                continue
+            # AI prompt 版本额外显示总伤
             damage, hits = self._parse_intent_damage(i)
-
-            # 优先用数值构建精确描述
             if damage and hits > 1:
-                parts.append(f"攻击 {damage}×{hits} = {damage*hits}总伤")
-            elif damage:
-                parts.append(f"攻击 {damage}伤")
-            elif label:
-                # label格式: "12" (单次) / "1×3" (多次) / "7，7" (逗号)
-                import re as _re
-                m_multi = _re.match(r"(\d+)\s*[×xX]\s*(\d+)", label)
-                if m_multi:
-                    dmg, hits = int(m_multi.group(1)), int(m_multi.group(2))
-                    parts.append(f"攻击 {dmg}×{hits} = {dmg*hits}总伤")
-                elif any(c.isdigit() for c in label):
-                    nums = [s.strip() for s in label.replace("，", ",").split(",") if s.strip().isdigit()]
-                    if len(nums) > 1:
-                        total = sum(int(n) for n in nums)
-                        parts.append(f"攻击 {'×'.join(nums)} = {total}总伤")
-                    elif len(nums) == 1:
-                        parts.append(f"攻击 {nums[0]}伤")
-                    else:
-                        parts.append(label)
-                else:
-                    parts.append(label)
-            elif itype:
-                cn = INTENT_CN.get(itype, itype)
-                parts.append(cn)
+                text = f"攻击 {damage}×{hits} = {damage*hits}总伤"
+            elif not damage:
+                # 从 label 解析多段伤害以显示总伤
+                label = (i.get("label") or "").strip()
+                if label:
+                    import re as _re
+                    m_multi = _re.match(r"(\d+)\s*[×xX]\s*(\d+)", label)
+                    if m_multi:
+                        dmg, ht = int(m_multi.group(1)), int(m_multi.group(2))
+                        text = f"攻击 {dmg}×{ht} = {dmg*ht}总伤"
+                    elif any(c.isdigit() for c in label):
+                        nums = [s.strip() for s in label.replace("，", ",").split(",") if s.strip().isdigit()]
+                        if len(nums) > 1:
+                            total = sum(int(n) for n in nums)
+                            text = f"攻击 {'×'.join(nums)} = {total}总伤"
+            parts.append(text)
         return "  ".join(parts) or "—"
 
     def _ai_combat(self, state):
@@ -377,7 +435,6 @@ class AIAdvisorMixin:
         self._js('app.setButtonState("btn-situation", "⏳ 分析中…", true)')
         self._js(f'app.updateAdvice({json.dumps("◌  正在分析战斗…")})')
         try:
-            time.sleep(1.5)
             try:
                 fresh = requests.get(API_URL, timeout=5).json()
                 if fresh.get("state_type") in ("monster", "elite", "boss"):
@@ -392,13 +449,38 @@ class AIAdvisorMixin:
             hand   = player.get("hand", [])
             rnd    = battle.get("round", "?")
 
+            # Player buff/debuff — needed for hand card damage calc
+            p_str = player.get("powers", [])
+            p_strength = self._get_power_amount(p_str, "Strength", "力量")
+            p_dexterity = self._get_power_amount(p_str, "Dexterity", "敏捷")
+            p_weak = self._has_power(p_str, "Weak", "虚弱")
+            p_vulnerable = self._has_power(p_str, "Vulnerable", "易伤")
+
             hand_lines = []
             for c in hand:
                 name = c["name"]
                 upg  = "+" if c.get("is_upgraded") else ""
                 ok   = "✓" if c.get("can_play") else "✗"
-                hint = CARD_DICT.get(name, c.get("description", "")[:28])
-                hand_lines.append(f"  [{c['index']}]{ok} {name}{upg}  费:{c.get('cost','?')}  {hint}")
+                hint = ""
+                if hasattr(self, 'cards'):
+                    d = self.cards.detail(name)
+                    if d: hint = d.get("desc_cn", "")
+                if not hint:
+                    hint = c.get("description", "")[:40]
+                ctype = (c.get("type") or "").lower()
+                # Pre-calculate actual damage/block with all buffs applied
+                actual_hint = ""
+                base_dmg, base_blk = self._parse_card_values(c)
+                if ctype in ("attack", "攻击") and base_dmg:
+                    actual = base_dmg + p_strength
+                    if p_weak: actual = int(actual * 0.75)
+                    hits = c.get("hits", 1)
+                    total = actual * hits
+                    actual_hint = f" →实际{total}伤" if hits == 1 else f" →实际{actual}×{hits}={total}伤"
+                if base_blk:
+                    actual_block = base_blk + p_dexterity
+                    actual_hint += f" →实际{actual_block}挡"
+                hand_lines.append(f"  [{c['index']}]{ok} {name}{upg}  费:{c.get('cost','?')}  {hint}{actual_hint}")
             hand_str = "\n".join(hand_lines) or "  （手牌为空）"
 
             # 敌人区分：同名敌人加编号
@@ -410,41 +492,46 @@ class AIAdvisorMixin:
                 hp  = e.get("hp", 0); mhp = e.get("max_hp", 1)
                 pct = int(hp/mhp*100)
                 intent = self._fmt_intent(e.get("intents", []))
-                powers = "  ".join(f"{_cn_power(p)}×{p['amount']}" for p in e.get("powers", []))
+                powers = self._fmt_powers_text(e.get("powers", []))
                 blk = e.get("block", 0)
+                # Calculate enemy's actual attack with their strength
+                e_str = self._get_power_amount(e.get("powers", []), "Strength", "力量")
+                e_weak = self._has_power(e.get("powers", []), "Weak", "虚弱")
+                actual_atk = ""
+                for i_intent in e.get("intents", []):
+                    base_dmg, hits = self._parse_intent_damage(i_intent)
+                    if base_dmg:
+                        real = base_dmg + e_str
+                        if e_weak: real = int(real * 0.75)
+                        if p_vulnerable: real = int(real * 1.5)
+                        total = real * hits
+                        actual_atk = f" →实际{real}×{hits}={total}伤" if hits > 1 else f" →实际{total}伤"
                 line = f"  {display_name}  HP:{hp}/{mhp}({pct}%)" + (f"  格挡:{blk}" if blk else "")
-                line += f"\n  意图：{intent}"
+                line += f"\n  意图：{intent}{actual_atk}"
                 if powers:
                     line += f"\n  状态：{powers}"
                 enemy_lines.append(line)
             enemy_str = "\n".join(enemy_lines)
 
-            # 友方召唤物（如Osty）
+            # 友方召唤物
             allies = [a for a in battle.get("allies", []) if a.get("name")]
             ally_lines = []
             for a in allies:
                 ahp = a.get("hp", 0); amhp = a.get("max_hp", 1)
                 aname = a.get("name", "?")
-                apowers = "  ".join(f"{_cn_power(p)}×{p['amount']}" for p in a.get("powers", []))
                 ablk = a.get("block", 0)
+                apowers = self._fmt_powers_text(a.get("powers", []))
                 aline = f"  {aname}  HP:{ahp}/{amhp}" + (f"  格挡:{ablk}" if ablk else "")
                 if apowers:
                     aline += f"  [{apowers}]"
                 ally_lines.append(aline)
             ally_str = "\n".join(ally_lines) if ally_lines else ""
 
-            # buff/debuff效果计算
-            p_str = player.get("powers", [])
-            p_strength = sum(p["amount"] for p in p_str if p.get("id") == "Strength" or p.get("name") in ("力量", "Strength"))
-            p_dexterity = sum(p["amount"] for p in p_str if p.get("id") == "Dexterity" or p.get("name") in ("敏捷", "Dexterity"))
-            p_weak = any(p.get("id") == "Weak" or p.get("name") in ("虚弱", "Weak") for p in p_str)
-            p_vulnerable = any(p.get("id") == "Vulnerable" or p.get("name") in ("易伤", "Vulnerable") for p in p_str)
-
             # 检查敌人是否有易伤/虚弱
             for e in enemies:
                 e_powers = e.get("powers", [])
-                e["_vulnerable"] = any(p.get("id") == "Vulnerable" or p.get("name") in ("易伤", "Vulnerable") for p in e_powers)
-                e["_weak"] = any(p.get("id") == "Weak" or p.get("name") in ("虚弱", "Weak") for p in e_powers)
+                e["_vulnerable"] = self._has_power(e_powers, "Vulnerable", "易伤")
+                e["_weak"] = self._has_power(e_powers, "Weak", "虚弱")
 
             # 构建伤害计算提示
             dmg_notes = []
@@ -458,225 +545,38 @@ class AIAdvisorMixin:
             if weak_enemies: dmg_notes.append(f"{','.join(weak_enemies)}虚弱(攻击-25%)")
             dmg_hint = "  ".join(dmg_notes) if dmg_notes else ""
 
-            p_powers = "  ".join(f"{_cn_power(p)}×{p['amount']}" for p in player.get("powers", []))
+            p_powers = self._fmt_powers_text(player.get("powers", []))
             relic_list = player.get("relics", [])
             relics = ", ".join(_cn_relic(r["name"]) for r in relic_list) or "无"
             potions = ", ".join(_cn_potion(p["name"]) for p in player.get("potions", [])) or "无"
 
-            # ── 遗物战斗效果分析（查数值表） ──
-            relic_ids = {r.get("id", r.get("name", "")) for r in relic_list}
-            relic_names_set = {r.get("name", "") for r in relic_list}
-            relic_effects = []
-            atk_playable = len([c for c in hand if c.get("can_play") and c.get("type") in ("Attack","attack","攻击")])
-            skill_playable = len([c for c in hand if c.get("can_play") and c.get("type") in ("Skill","skill","技能")])
-            power_playable = len([c for c in hand if c.get("can_play") and c.get("type") in ("Power","power","能力")])
-            playable_count = len([c for c in hand if c.get("can_play")])
-            has_potion = any(p.get("name") for p in player.get("potions", []))
+            # ── 遗物/药水效果（数据驱动，查表） ──
+            relic_combat_info = self._explain_relics(relic_list, context="combat")
+            potion_info = self._explain_potions(player.get("potions", []))
+            is_elite = state.get("state_type") in ("elite", "boss")
             current_round = int(rnd) if str(rnd).isdigit() else 1
 
-            for rid, rdata in self._relic_combat.items():
-                if rid.startswith("_"): continue
-                cn = rdata.get("name_cn", rid)
-                if rid not in relic_ids and cn not in relic_names_set:
-                    continue
-                trigger = rdata.get("trigger", "")
-                eff = rdata.get("effect", "")
-                val = rdata.get("value", 0)
-                thresh = rdata.get("threshold", 0)
-                note = rdata.get("note", "")
-                hint = None
-
-                # ── 战斗开始触发 ──
-                if trigger == "battle_start" and current_round == 1:
-                    if eff == "vigor":
-                        hint = f"{cn}：首回合+{val}活力，首张攻击+{val}伤害"
-                    elif eff == "block":
-                        hint = f"{cn}：首回合+{val}格挡"
-                    elif eff == "vuln_all":
-                        hint = f"{cn}：首回合敌人{val}层易伤，攻击+50%"
-                    elif eff == "weak_all":
-                        hint = f"{cn}：首回合敌人{val}层虚弱，攻击-25%"
-                    elif eff == "draw":
-                        hint = f"{cn}：首回合多抽{val}张"
-                    elif eff == "strength":
-                        hint = f"{cn}：+{val}力量，所有攻击+{val}伤害"
-                    elif eff == "dexterity":
-                        hint = f"{cn}：+{val}敏捷，所有格挡+{val}"
-                    elif eff == "plating":
-                        hint = f"{cn}：+{val}覆甲，每回合+{val}格挡"
-                    elif eff == "thorns":
-                        hint = f"{cn}：+{val}荆棘，被攻击反弹{val}伤"
-                    elif eff == "aoe_dmg":
-                        hint = f"{cn}：全体敌人受{val}伤害"
-                    elif eff == "draw_confusion":
-                        hint = f"{cn}：多抽{val}张但费用随机"
-                elif trigger == "elite_start" and is_elite:
-                    if eff == "draw":
-                        hint = f"{cn}：精英战多抽{val}张"
-                    elif eff == "strength":
-                        hint = f"{cn}：精英战+{val}力量"
-                elif trigger == "turn2_start" and current_round == 2:
-                    hint = f"{cn}：第2回合+{val}{'格挡' if eff == 'block' else '能量'}"
-                elif trigger == "turn3_start" and current_round == 3:
-                    if isinstance(val, list):
-                        hint = f"{cn}：第3回合+{val[0]}力量+{val[1]}敏捷"
-                    else:
-                        hint = f"{cn}：第3回合+{val}格挡"
-
-                # ── 每回合触发 ──
-                elif trigger == "turn_start":
-                    if eff == "block":
-                        hint = f"{cn}：每回合+{val}格挡"
-                    elif eff == "aoe_dmg":
-                        hint = f"{cn}：每回合全体{val}伤害"
-                    elif eff == "str_both" and isinstance(val, list):
-                        hint = f"{cn}：你+{val[0]}力量，敌人+{val[1]}力量→速战速决"
-                    elif eff == "energy_enemy_str" and isinstance(val, list):
-                        hint = f"{cn}：+{val[0]}能量但敌人+{val[1]}力量"
-                    elif eff == "draw":
-                        hint = f"{cn}：每回合多抽{val}张"
-                    elif eff == "draw_no_mid":
-                        hint = f"{cn}：多抽{val}张但回合中不能抽"
-                    elif eff == "energy_no_pot":
-                        hint = f"{cn}：+{val}能量（无法获得药水）"
-
-                # ── 打牌触发 ──
-                elif trigger == "play_3atk" and atk_playable >= thresh:
-                    if eff == "strength":
-                        hint = f"{cn}：打{thresh}攻击+{val}力量（手里{atk_playable}张攻击）"
-                    elif eff == "dexterity":
-                        hint = f"{cn}：打{thresh}攻击+{val}敏捷（手里{atk_playable}张攻击）"
-                    elif eff == "block":
-                        hint = f"{cn}：打{thresh}攻击+{val}格挡（手里{atk_playable}张攻击）"
-                    elif eff == "random_dmg":
-                        hint = f"{cn}：打{thresh}攻击→随机敌人{val}伤害"
-                elif trigger == "play_3skill" and skill_playable >= thresh:
-                    if eff == "aoe_dmg":
-                        hint = f"{cn}：打{thresh}技能→全体{val}伤害（手里{skill_playable}张技能）"
-                    elif eff == "block":
-                        hint = f"{cn}：打{thresh}技能+{val}格挡"
-                elif trigger == "play_power" and power_playable > 0:
-                    hint = f"{cn}：打能力牌→{'抽'+str(val)+'张' if eff == 'draw' else '全体'+str(val)+'伤害'}"
-                elif trigger == "play_atk" and atk_playable > 0:
-                    if eff == "block":
-                        hint = f"{cn}：每打攻击+{val}格挡（{atk_playable}张=+{val*atk_playable}格挡）"
-                elif trigger == "play_cost2+":
-                    cost2 = [c for c in hand if c.get("can_play") and (c.get("cost",0) or 0) >= 2]
-                    if cost2:
-                        hint = f"{cn}：打费≥2牌+{val}格挡（{len(cost2)}张可触发）"
-                elif trigger == "play_5card" and playable_count >= thresh:
-                    hint = f"{cn}：第{thresh}张牌免费（可出{playable_count}张）"
-                elif trigger == "play_4card" and playable_count >= thresh:
-                    hint = f"{cn}：每{thresh}张牌抽{val}张（可打{playable_count}张）"
-                elif trigger == "play_shiv":
-                    shivs = [c for c in hand if "小刀" in c.get("name","") or "Shiv" in c.get("name","")]
-                    if shivs:
-                        hint = f"{cn}：每打小刀+{val}敏捷（{len(shivs)}张小刀）"
-
-                # ── 药水协同 ──
-                elif trigger == "use_potion" and has_potion:
-                    hint = f"{cn}：用药水时+{val}力量！攻击回合用药水"
-
-                # ── 被动类 ──
-                elif trigger == "passive":
-                    if eff == "potion_double" and has_potion:
-                        hint = f"{cn}：药水效果×{val}！所有药水价值翻倍"
-                    elif eff == "no_pot_dex" and not has_potion:
-                        hint = f"{cn}：没药水+{val}敏捷，格挡+{val}"
-                    elif eff == "strike_dmg":
-                        strikes = [c for c in hand if "打击" in c.get("name","") or "Strike" in c.get("name","")]
-                        if strikes:
-                            hint = f"{cn}：{len(strikes)}张打击各+{val}伤害"
-                    elif eff == "upg_atk_dmg":
-                        upg_atk = [c for c in hand if c.get("is_upgraded") and c.get("type") in ("Attack","attack","攻击")]
-                        if upg_atk:
-                            hint = f"{cn}：{len(upg_atk)}张升级攻击各+{val}伤害"
-                    elif eff == "energy_retain":
-                        hint = f"{cn}：能量保留到下回合，不必硬凑用完"
-                    elif eff == "low_hp_str" and hp_pct <= thresh:
-                        hint = f"{cn}：HP≤{thresh}%已激活，+{val}力量"
-                    elif eff == "max_hp_loss":
-                        hint = f"{cn}：单回合最多掉{val}HP"
-                    elif eff == "few_card_halfdmg":
-                        hint = f"{cn}：出≤{thresh}牌受伤减半{'（当前可触发）' if playable_count <= thresh else '（当前出牌多无法触发）'}"
-                    elif eff == "block_retain":
-                        hint = f"{cn}：保留最多{val}格挡到下回合"
-                    elif eff == "min_dmg":
-                        hint = f"{cn}：未挡伤害<{val}→提升为{val}"
-
-                # ── 回合结束触发 ──
-                elif trigger == "turn_end":
-                    if eff == "no_atk_energy":
-                        no_atk = not any(c.get("type") in ("Attack","attack","攻击") for c in hand if c.get("can_play"))
-                        hint = f"{cn}：{'不出攻击→下回合+' + str(val) + '能量' if no_atk else '出攻击会失去下回合+' + str(val) + '能量'}"
-                    elif eff == "few_card_draw" and playable_count <= thresh:
-                        hint = f"{cn}：出≤{thresh}牌→下回合多抽{val}张"
-                    elif eff == "no_block_block":
-                        hint = f"{cn}：回合结束无格挡→+{val}格挡"
-                    elif eff == "hand_block":
-                        hint = f"{cn}：回合结束每张手牌+{val}格挡"
-                    elif eff == "block_dmg" and isinstance(val, list):
-                        hint = f"{cn}：回合结束格挡≥{thresh}→对敌{val[1]}伤害"
-                    elif eff == "empty_hand_aoe":
-                        hint = f"{cn}：回合结束无手牌→全体{val}伤害"
-
-                # ── 条件触发 ──
-                elif trigger == "on_hurt":
-                    hint = f"{cn}：受伤→下回合+{val}格挡，可策略性受伤"
-                elif trigger == "first_hurt" and current_round <= 2:
-                    hint = f"{cn}：首次受伤→抽{val}张牌"
-                elif trigger == "on_exhaust":
-                    hint = f"{cn}：消耗牌→{'全体' if 'aoe' in eff else '随机敌人'}{val}伤害"
-                elif trigger == "on_discard":
-                    hint = f"{cn}：弃牌→{'随机敌人'+str(val)+'伤害' if 'dmg' in eff else '+'+str(val)+'格挡'}"
-                elif trigger == "on_kill":
-                    if isinstance(val, list):
-                        hint = f"{cn}：击杀→+{val[0]}能量+抽{val[1]}张"
-                elif trigger == "on_shuffle" and shuffle_info:
-                    hint = f"{cn}：洗牌+{val}格挡（即将洗牌！）"
-                elif trigger == "on_death":
-                    hint = f"{cn}：HP归0复活回{val}%HP，可更激进"
-                elif trigger == "break_block":
-                    hint = f"{cn}：突破格挡→{val}层易伤"
-                elif trigger == "ally_attack":
-                    hint = f"{cn}：Osty攻击时+{val}格挡"
-                elif trigger == "first_spend":
-                    hint = f"{cn}：首次花费→+{val}力量"
-
-                if hint:
-                    relic_effects.append(hint)
-
-            # 不在数值表但重要的遗物
-            if "MarkOfTheBloom" in relic_ids:
-                relic_effects.append("绽放印记：⚠ 无法回血！最小化受伤")
-
-            relic_combat_info = "\n".join(relic_effects) if relic_effects else ""
-
-            # ── 牌组追踪：推算摸牌堆可能内容 ──
+            # ── 牌组追踪（统一：API有具体牌就用，否则推算）──
             draw_count = player.get("draw_pile_count", 0)
             disc_count = player.get("discard_pile_count", 0)
-            hand_names = [c["name"] + ("+" if c.get("is_upgraded") else "") for c in hand]
-            # 用完整牌组减去手牌 = 摸牌堆+弃牌堆中的牌
-            remaining = list(self.deck_acquired) if self.deck_acquired else []
-            for h in hand_names:
-                if h in remaining:
-                    remaining.remove(h)
-            # 如果摸牌堆比剩余牌少，说明部分在弃牌堆
-            # 统计剩余牌出现频次，计算摸牌概率
-            deck_tracking = ""
-            if remaining and draw_count > 0:
+            draw_pile = player.get("draw_pile", [])
+            disc_pile = player.get("discard_pile", [])
 
-                remain_cnt = Counter(remaining)
-                total_unseen = len(remaining)  # 摸牌堆+弃牌堆
-                if draw_count <= total_unseen and draw_count > 0:
-                    # 摸牌堆中每张牌的概率 ≈ 该牌剩余数/max(摸牌堆数,1)
-                    key_cards = []
-                    for card, cnt in remain_cnt.most_common():
-                        prob = min(cnt / max(draw_count, 1) * 100, 100)
-                        if prob >= 15:  # 只显示≥15%概率的
-                            key_cards.append(f"{card}({prob:.0f}%)")
-                    if key_cards:
-                        deck_tracking = f"摸牌堆推算（{draw_count}张）：" + " ".join(key_cards[:8])
+            draw_summary = self._pile_summary(draw_pile)
+            disc_summary = self._pile_summary(disc_pile)
+
+            # Fallback: if API doesn't give pile contents, estimate from deck
+            if not draw_summary and self.deck_acquired and draw_count > 0:
+                hand_names = [c["name"] for c in hand]
+                remaining = list(self.deck_acquired)
+                for h in hand_names:
+                    if h in remaining: remaining.remove(h)
+                if remaining:
+                    remain_cnt = Counter(remaining)
+                    key = [f"{n}({min(cnt/max(draw_count,1)*100,100):.0f}%)"
+                           for n, cnt in remain_cnt.most_common(6)
+                           if cnt/max(draw_count,1)*100 >= 15]
+                    if key: draw_summary = " ".join(key)
 
             # ── 战术计算 ──
             my_hp = player.get("hp", 0)
@@ -730,283 +630,11 @@ class AIAdvisorMixin:
             if draw_count <= 3 and draw_count >= 0:
                 shuffle_info = f"摸牌堆仅{draw_count}张，下回合将洗牌（弃牌堆{disc_count}张回来）"
 
-            # ── 药水智能分析 ──
-            potion_list = player.get("potions", [])
-            potion_hints = []
-            is_elite = state.get("state_type") in ("elite", "boss")
-            is_boss = state.get("state_type") == "boss"
+            # ── 药水（数据驱动） ──
             facing_lethal = lethal_info.startswith("⚠ 致命")
             can_kill = kill_info.startswith("★ 可击杀")
 
-            has_sacred_bark = "SacredBark" in relic_ids
-            bark_note = "（圣树皮翻倍！）" if has_sacred_bark else ""
-            for pot in potion_list:
-                pname = pot.get("name", "")
-                if not pname:
-                    continue
-                cn_name = _cn_potion(pname)
-                guide = self._potion_guide.get(pname, {})
-                effect = guide.get("effect", "")
-                best_use = guide.get("best_use", "")
-                pvars = guide.get("vars", {})
-                # 圣树皮翻倍数值
-                bark_mult = 2 if has_sacred_bark else 1
-
-                # 分类药水并给出时机建议
-                hint = None
-
-                # 力量/敏捷类 — 持续增益，越早用越赚
-                if pvars.get("StrengthPower") or pvars.get("DexterityPower"):
-                    buff_val = (pvars.get("StrengthPower", 0) or pvars.get("DexterityPower", 0)) * bark_mult
-                    buff_type = "力量" if pvars.get("StrengthPower") else "敏捷"
-                    if is_boss and int(rnd) <= 2:
-                        hint = f"★ {cn_name}：Boss战前2回合用！+{buff_val}{buff_type}每回合吃加成{bark_note}"
-                    elif is_elite and int(rnd) <= 2:
-                        hint = f"★ {cn_name}：精英战早期用，+{buff_val}{buff_type}越早越赚{bark_note}"
-                    elif facing_lethal:
-                        if buff_type == "敏捷":
-                            hint = f"○ {cn_name}：面临致命，+{buff_val}敏捷能多挡{buff_val * len([c for c in hand if c.get('type') in ('Skill','skill','技能')])}点"
-                    else:
-                        hint = f"留着：{cn_name}留给精英/Boss战第1回合用"
-
-                # 攻击药水 — 能补刀击杀时用
-                elif pvars.get("Damage"):
-                    pot_dmg = pvars["Damage"] * bark_mult
-                    if not can_kill and total_hand_dmg + pot_dmg >= total_enemy_hp:
-                        hint = f"★ {cn_name}：用了能击杀！手牌{total_hand_dmg}+药水{pot_dmg}≥敌人{total_enemy_hp}HP"
-                    elif facing_lethal:
-                        # 能杀掉某个敌人减少伤害
-                        for e in enemies:
-                            if e.get("hp", 0) <= pot_dmg:
-                                hint = f"★ {cn_name}：直接秒{e.get('_display_name', e.get('name'))}减少承伤"
-                                break
-                    elif not is_elite:
-                        hint = f"留着：{cn_name}({pot_dmg}伤)留给精英/Boss补刀"
-
-                # 格挡药水
-                elif pvars.get("Block"):
-                    pot_blk = pvars["Block"] * bark_mult
-                    if facing_lethal:
-                        hint = f"★ {cn_name}：致命危机！+{pot_blk}格挡保命"
-                    elif total_incoming > 0 and total_incoming > my_block + sum(
-                        self._parse_card_values(c)[1] for c in hand if c.get("can_play") and c.get("type") in ("Skill","skill","技能")):
-                        hint = f"○ {cn_name}：本回合格挡不够，+{pot_blk}能减少掉血"
-
-                # 回血药水
-                elif pvars.get("Heal") or pvars.get("HealPercent"):
-                    heal = (pvars.get("Heal", 0) or int(my_max_hp * pvars.get("HealPercent", 0) / 100)) * bark_mult
-                    if facing_lethal:
-                        hint = f"★ {cn_name}：致命危机，+{heal}HP保命"
-                    elif hp_pct < 30:
-                        hint = f"○ {cn_name}：HP很低({hp_pct}%)，考虑现在用+{heal}HP"
-                    else:
-                        hint = f"留着：{cn_name}留到HP更低时保命"
-
-                # 能量药水 — 关键回合多出牌
-                elif pvars.get("Energy"):
-                    extra_e = pvars["Energy"]
-                    unplayable = [c for c in hand if not c.get("can_play") and c.get("cost", 99) <= my_energy + extra_e]
-                    if facing_lethal and unplayable:
-                        hint = f"★ {cn_name}：+{extra_e}能量，多出{len(unplayable)}张牌保命"
-                    elif is_boss and int(rnd) <= 2:
-                        hint = f"○ {cn_name}：Boss战+{extra_e}能量，多出关键牌"
-                    else:
-                        hint = f"留着：{cn_name}留给关键回合爆发"
-
-                # 抽牌药水
-                elif pvars.get("Draw"):
-                    draw_n = pvars["Draw"]
-                    if deck_tracking and is_elite:
-                        hint = f"○ {cn_name}：抽{draw_n}张，可能抽到关键牌"
-                    else:
-                        hint = f"留着：{cn_name}留给需要找关键牌的回合"
-
-                # 毒药水 — 叠毒
-                elif pvars.get("PoisonPower"):
-                    poison_val = pvars["PoisonPower"] * bark_mult
-                    if is_boss:
-                        hint = f"★ {cn_name}：Boss战+{poison_val}层毒，长期战斗毒伤可观{bark_note}"
-                    elif not is_elite:
-                        hint = f"留着：{cn_name}({poison_val}毒)留给精英/Boss"
-
-                # 灾厄药水 — 强力DOT
-                elif pvars.get("DoomPower"):
-                    doom_val = pvars["DoomPower"] * bark_mult
-                    if is_boss or is_elite:
-                        hint = f"★ {cn_name}：+{doom_val}灾厄，每回合{doom_val}伤害{bark_note}"
-                    else:
-                        hint = f"留着：{cn_name}({doom_val}灾厄)留给精英/Boss"
-
-                # 消亡粉末 — 受伤时额外伤害
-                elif pvars.get("Demise"):
-                    demise_val = pvars["Demise"] * bark_mult
-                    if is_elite or is_boss:
-                        hint = f"○ {cn_name}：+{demise_val}消亡，敌人每次受伤额外+{demise_val}伤害"
-
-                # 集中药水 — 充能球加成
-                elif pvars.get("FocusPower"):
-                    focus_val = pvars["FocusPower"] * bark_mult
-                    if is_boss and int(rnd) <= 2:
-                        hint = f"★ {cn_name}：Boss战+{focus_val}集中，充能球被动效果翻倍{bark_note}"
-                    elif is_elite:
-                        hint = f"○ {cn_name}：精英战+{focus_val}集中"
-                    else:
-                        hint = f"留着：{cn_name}留给精英/Boss"
-
-                # 覆甲药水 — 持续格挡
-                elif pvars.get("PlatingPower"):
-                    plate_val = pvars["PlatingPower"] * bark_mult
-                    if is_boss:
-                        hint = f"★ {cn_name}：Boss战+{plate_val}覆甲，每回合+{plate_val}格挡{bark_note}"
-                    elif facing_lethal:
-                        hint = f"★ {cn_name}：+{plate_val}覆甲保命"
-
-                # 荆棘药水 — 被打反伤
-                elif pvars.get("ThornsPower"):
-                    thorns_val = pvars["ThornsPower"] * bark_mult
-                    enemies_multi = len(enemies) > 1
-                    if enemies_multi:
-                        hint = f"○ {cn_name}：+{thorns_val}荆棘，{len(enemies)}个敌人打你都反弹{thorns_val}伤害"
-
-                # 祭祀药水 — 每回合+力量
-                elif pvars.get("RitualPower"):
-                    ritual_val = pvars["RitualPower"] * bark_mult
-                    if is_boss and int(rnd) <= 2:
-                        hint = f"★ {cn_name}：Boss战+{ritual_val}祭祀，每回合末+{ritual_val}力量，越早越赚{bark_note}"
-                    elif is_elite:
-                        hint = f"○ {cn_name}：精英战+{ritual_val}祭祀（每回合+力量）"
-                    else:
-                        hint = f"留着：{cn_name}(每回合+力量)留给Boss"
-
-                # 抽牌类（Cards变量）— 迅捷/狡诈/明晰等
-                elif pvars.get("Cards") and not pvars.get("Energy"):
-                    cards_val = pvars["Cards"]
-                    if facing_lethal:
-                        hint = f"○ {cn_name}：抽/生成{cards_val}张牌，可能找到保命牌"
-                    elif is_elite or is_boss:
-                        hint = f"○ {cn_name}：{effect[:25]}"
-
-                # ── 特殊高价值药水 ──
-
-                # 易伤药水 — 攻击伤害+50%，多攻击牌时收益巨大
-                elif pvars.get("VulnerablePower"):
-                    atk_count = len([c for c in hand if c.get("can_play") and c.get("type") in ("Attack","attack","攻击")])
-                    if is_boss and int(rnd) <= 2:
-                        hint = f"★ {cn_name}：Boss战用！{atk_count}张攻击牌全吃+50%伤害"
-                    elif atk_count >= 3:
-                        hint = f"★ {cn_name}：手里{atk_count}张攻击牌，+50%伤害收益极高"
-                    elif not is_elite:
-                        hint = f"留着：{cn_name}留给精英/Boss，攻击牌多的回合用"
-
-                # 虚弱药水 — 降低敌人攻击25%
-                elif pvars.get("WeakPower"):
-                    if facing_lethal or total_incoming > 20:
-                        reduced = int(total_incoming * 0.25)
-                        hint = f"★ {cn_name}：敌人伤害{total_incoming}，虚弱后减少{reduced}点"
-                    elif is_boss:
-                        hint = f"○ {cn_name}：Boss战减伤25%，大攻击回合用"
-
-                # 无实体药水 — S级，1回合所有伤害变1
-                elif pvars.get("IntangiblePower"):
-                    if facing_lethal:
-                        hint = f"★ {cn_name}：S级！致命时用，本回合所有伤害→1"
-                    elif is_boss and total_incoming >= 30:
-                        hint = f"★ {cn_name}：Boss大招回合用！{total_incoming}伤害→1"
-                    else:
-                        hint = f"留着：{cn_name}(S级)留给Boss最危险的回合"
-
-                # 复制药水 — S级，下一张牌打两次
-                elif pvars.get("DuplicationPower"):
-                    best_card = max(hand, key=lambda c: sum(self._parse_card_values(c)) or 0) if hand else None
-                    if best_card and is_elite:
-                        bc_name = best_card.get("name", "?")
-                        hint = f"★ {cn_name}：S级！复制{bc_name}打两次，精英战用"
-                    else:
-                        hint = f"留着：{cn_name}(S级)留给Boss，复制最强牌"
-
-                # 缓冲药水 — 挡1次致命伤害
-                elif pvars.get("BufferPower"):
-                    if facing_lethal:
-                        hint = f"★ {cn_name}：完美保命！阻止下1次HP伤害"
-                    else:
-                        hint = f"留着：{cn_name}留给致命危机"
-
-                # 超巨化 — 伤害翻倍，受伤也翻倍
-                elif pvars.get("GigantificationPower"):
-                    if can_kill or (is_boss and my_block > total_incoming):
-                        hint = f"★ {cn_name}：攻击翻倍！格挡够就用，但受伤也翻倍"
-                    elif facing_lethal:
-                        hint = f"✗ {cn_name}：致命时别用！受伤翻倍会更惨"
-                    else:
-                        hint = f"留着：{cn_name}留给格挡充足+能爆发的回合"
-
-                # 预知之滴 — 从摸牌堆搜索1张牌
-                elif "选择1张牌放入手牌" in effect or "搜索" in effect:
-                    if is_elite or is_boss:
-                        hint = f"○ {cn_name}：搜索关键牌，精英/Boss战需要特定牌时用"
-                    else:
-                        hint = f"留着：{cn_name}留给需要特定牌的关键回合"
-
-                # 癫狂之触 — 1张牌永久0费，极强
-                elif "永久0费" in effect:
-                    if is_boss:
-                        hint = f"★ {cn_name}：Boss战选最贵的牌永久0费！"
-
-                # 镣铐药水 — 敌人失去力量
-                elif pvars.get("ShacklingPotionPower"):
-                    str_enemies = [e for e in enemies if any(
-                        p.get("id") == "Strength" or p.get("name") in ("力量","Strength")
-                        for p in e.get("powers", []))]
-                    if str_enemies:
-                        hint = f"★ {cn_name}：敌人有力量buff，用了降7点力量大幅减伤"
-                    elif is_boss:
-                        hint = f"○ {cn_name}：Boss战减力量"
-
-                # 固化药水 — 格挡翻倍
-                elif "翻倍" in effect and "格挡" in effect:
-                    if my_block >= 15:
-                        hint = f"★ {cn_name}：当前格挡{my_block}→{my_block*2}！翻倍价值高"
-                    elif my_block > 0:
-                        hint = f"○ {cn_name}：格挡{my_block}→{my_block*2}，格挡再高一点用更赚"
-
-                # 液态记忆 — 从弃牌堆选牌
-                elif "弃牌堆" in effect and "手牌" in effect:
-                    if is_elite or is_boss:
-                        hint = f"○ {cn_name}：从弃牌堆捞关键牌回手"
-
-                # 熔炉祝福 — 升级所有手牌
-                elif "升级" in effect and "手牌" in effect and "所有" in effect:
-                    if is_boss and int(rnd) <= 2:
-                        hint = f"★ {cn_name}：Boss战全手牌升级！越早越好"
-                    elif is_elite:
-                        hint = f"○ {cn_name}：精英战手牌全升级"
-
-                # 骨头酿 — 召唤Osty
-                elif pvars.get("Summon") or "召唤" in effect:
-                    if is_boss or is_elite:
-                        hint = f"★ {cn_name}：召唤Osty，精英/Boss战多一个肉盾+输出"
-
-                # 瓶中船 — 分两回合给格挡
-                elif "下回合" in effect and "格挡" in effect:
-                    if facing_lethal or total_incoming > 15:
-                        hint = f"○ {cn_name}：本回合+下回合都给格挡"
-
-                # 其他药水 — 用知识库的best_use
-                else:
-                    if facing_lethal:
-                        hint = f"○ {cn_name}：面临致命，效果：{effect[:30]}"
-                    elif is_elite or is_boss:
-                        if best_use:
-                            hint = f"参考：{cn_name} — {best_use[:40]}"
-
-                if hint:
-                    potion_hints.append(hint)
-
-            potion_analysis = "\n".join(potion_hints) if potion_hints else ""
-
             tactical_info = "\n".join(x for x in [lethal_info, kill_info, shuffle_info] if x)
-            if potion_analysis:
-                tactical_info += ("\n" if tactical_info else "") + "药水分析：\n" + potion_analysis
 
             char = player.get('character', '?')
 
@@ -1025,6 +653,14 @@ class AIAdvisorMixin:
                         break
             monster_info = "\n".join(monster_hints) if monster_hints else ""
 
+            # Collect all battlefield powers and explain them
+            all_battlefield_powers = list(player.get("powers", []))
+            for e in enemies:
+                all_battlefield_powers.extend(e.get("powers", []))
+            for a in allies:
+                all_battlefield_powers.extend(a.get("powers", []))
+            power_explanations = self._explain_powers(all_battlefield_powers)
+
             prompt = f"""你是杀戮尖塔2战斗教练。纯文字，不用markdown符号。所有牌名遗物名用中文。
 
 {smart_ctx}
@@ -1042,15 +678,18 @@ class AIAdvisorMixin:
 敌人：
 {enemy_str}
 {"友方召唤物：" + chr(10) + ally_str if ally_str else ""}
-摸牌堆：{draw_count}张  弃牌堆：{disc_count}张
-{deck_tracking}
-{"战术分析：" + chr(10) + tactical_info if tactical_info else ""}
-{"遗物效果（本回合相关）：" + chr(10) + relic_combat_info if relic_combat_info else ""}
+{"摸牌堆(" + str(draw_count) + "张)：" + draw_summary if draw_summary else "摸牌堆：" + str(draw_count) + "张"}
+{"弃牌堆(" + str(disc_count) + "张)：" + disc_summary if disc_summary else "弃牌堆：" + str(disc_count) + "张"}
+{"战术：" + tactical_info if tactical_info else ""}
+{"遗物战斗效果：" + chr(10) + relic_combat_info if relic_combat_info else ""}
+{"药水效果：" + chr(10) + potion_info if potion_info else ""}
+{"当前战场效果说明：" + chr(10) + power_explanations if power_explanations else ""}
 
-重要：
-1. 计算伤害时必须考虑力量加成、虚弱减伤、易伤增伤。攻击牌面板伤害+力量=基础伤害，我方虚弱则×0.75，敌方易伤则×1.5。格挡牌面板+敏捷=实际格挡。
-2. 如果有摸牌堆推算信息，分析是否值得用抽牌效果（如后空翻、猛力抽牌）来抽到关键牌。
-3. 如果摸牌堆快空了（≤3张），弃牌堆会洗回来——考虑弃牌堆里有什么好牌即将回来。
+规则：
+- 手牌"→实际X伤/X挡"已算好全部加成，直接用。敌人"→实际X伤"也已算好力量加成，直接用。
+- 仔细阅读上方"战场效果说明"理解每个buff/debuff的实际效果，做出正确决策。
+- 考虑击杀顺序：击杀一个敌人可能触发其他敌人的效果（如饥饿、狂食等）。
+- 摸牌堆空→洗牌。考虑整场节奏。
 
 请严格按以下简洁格式输出，每行一条，不要多余解释：
 
@@ -1059,16 +698,11 @@ class AIAdvisorMixin:
 2. ...
 （能量剩余：X）
 
-⚠ 本回合最大威胁
-谁，什么意图，多少伤害，是否致命。如果有连击/buff叠加要算总伤。
+⚠ 威胁分析（一句话：总伤害X，格挡Y后净受伤Z，是否致命）
 
-💡 核心思路
-为什么这样出牌，优先解决什么问题。如果摸牌堆有关键牌或即将洗牌，说明跨回合策略。
+💡 核心思路（一句话：为什么这样出牌）"""
 
-🧪 药水建议（如果有药水分析信息）
-哪瓶该用/该留？第几回合用收益最大？用了能改变什么局面？"""
-
-            advice = self._ask_llm(prompt)
+            advice = self.llm.ask(prompt, timeout=90)
 
             # ── 极简排版 ──
             lines = [f"◆ 第{rnd}回合"]
@@ -1099,8 +733,9 @@ class AIAdvisorMixin:
             status_parts = []
             if p_strength: status_parts.append(f"力量{p_strength:+d}")
             if p_dexterity: status_parts.append(f"敏捷{p_dexterity:+d}")
+            _STAT_POWERS = {"力量", "Strength", "敏捷", "Dexterity"}
             other_buffs = [f"{p['name']}{p['amount']}" for p in player.get("powers", [])
-                          if p.get("name") not in ("力量","Strength","敏捷","Dexterity")]
+                          if p.get("name") not in _STAT_POWERS and p.get("id") not in _STAT_POWERS]
             status_parts.extend(other_buffs[:4])
             if status_parts:
                 lines.append(f"我方: {' '.join(status_parts)}")
@@ -1124,15 +759,29 @@ class AIAdvisorMixin:
                 if hp_after > 0:
                     lines.append(f"受伤：-{gap}HP→{hp_after}HP")
 
-            # 在 ▶ ⚠ 💡 🧪 前加空行
-            formatted = advice.replace("▶", "\n▶").replace("⚠", "\n⚠").replace("💡", "\n💡").replace("🧪", "\n🧪").strip()
+            formatted = advice.strip()
 
             if not self._analysis_stale():
-                # 上栏：战场信息
-                scene_html = self._render_formatted_html("\n".join(lines))
-                self._js(f'app.updateScene({{type:"html",html:{json.dumps(scene_html)}}})')
-                # 下栏：AI建议
-                self._push_advice(formatted)
+                # Re-display card-based combat (don't replace with plain text)
+                self._display_combat(state)
+                # Parse play order from AI advice: "1. [idx]cardname" or "N. cardname"
+                import re as _re_combat
+                play_order = []  # list of card names in play order
+                for m in _re_combat.finditer(r'(\d+)[.、]\s*(?:\[\d+\])?\s*[✓✗]?\s*(.+?)(?:\s*[—–\-→]|$)', formatted):
+                    card_raw = m.group(2).strip()
+                    # Strip [idx] prefix, target indicators, parenthetical notes
+                    card_raw = _re_combat.sub(r'^\[\d+\]\s*', '', card_raw)
+                    # Split at target markers: ⚔ ✦ 🛡 × ✦ → or spaces followed by known targets
+                    card_name = _re_combat.split(r'\s*[⚔✦🛡×→]\s*|\s+(?:自身|敌方|全体)', card_raw)[0].strip()
+                    card_name = card_name.split("（")[0].split("(")[0].rstrip("+ ")
+                    if card_name and len(card_name) >= 2 and card_name not in ('出牌',):
+                        play_order.append(card_name)
+                # Highlight hand cards with play order badges
+                for idx, cname in enumerate(play_order):
+                    self._js(f'app.highlightChoice({json.dumps(cname)},{idx+1})')
+                # Set advice title and push advice
+                self._js('app.setAdviceTitle("AI 出牌建议")')
+                self._push_advice(formatted, card_tooltips=False)
                 self._js('app.setTab("situation")')
         except Exception as e:
             if not self._analysis_stale():
@@ -1142,8 +791,10 @@ class AIAdvisorMixin:
 
     def _ai_map(self, state):
         self._busy_strat = True
-        self._js(f'app.updateScene({{type:"html",html:{json.dumps("◌  正在分析路线…")}}})')
-        self._clear_advice()
+        # Keep route options visible — reset old labels & only update advice area
+        self._js('app.resetRouteLabels()')
+        self._show_analyzing("◌  正在分析路线…")
+        self._js('app.setAdviceTitle("AI 路线分析")')
         try:
             run    = state.get("run", {})
             player = self._get_player(state) or self.last_player or {}
@@ -1154,15 +805,27 @@ class AIAdvisorMixin:
             p_potions = player.get('potions') or self.last_player.get('potions', [])
             relics = ', '.join(r['name'] for r in p_relics) or '无'
 
-            node_cn = {"Monster":"普通怪","Elite":"精英怪","Boss":"Boss",
-                       "Shop":"商店","Rest":"休息点","RestSite":"休息点","Event":"事件",
-                       "Treasure":"宝箱","Unknown":"未知","Ancient":"古代事件"}
+            # Build full route chains from nodes graph — trace ALL forks
+            by_pos = self._build_map_by_pos(mdata)
+
             opts = mdata.get("next_options", [])
-            opts_str = "\n".join(
-                f"路线{o['index']+1}：{node_cn.get(o['type'],o['type'])}"
-                + (" → " + " / ".join(node_cn.get(n['type'],n['type']) for n in o.get('leads_to',[])[:3])
-                   if o.get('leads_to') else "")
-                for o in opts) or "（无路线信息）"
+            route_lines = []
+            route_idx = 0
+            for o in opts:
+                first = self._NODE_CN.get(o['type'], o['type'])
+                branches = self._trace_all_routes(by_pos, o.get("col", 0), o.get("row", 0))
+                if not branches:
+                    branches = [[]]
+                seen = set()
+                for follow in branches:
+                    key = tuple(follow)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    route_idx += 1
+                    chain = [first] + [self._NODE_CN.get(t, t) for t in follow]
+                    route_lines.append(f"路线{route_idx}：{' → '.join(chain)}")
+            opts_str = "\n".join(route_lines) or "（无路线信息）"
 
             boss_data = mdata.get("boss", {})
             boss = boss_data.get("name") or boss_data.get("type") or "未知"
@@ -1187,201 +850,9 @@ class AIAdvisorMixin:
                 types.extend(n.get("type", "") for n in o.get("leads_to", []))
                 route_summary.append(types)
 
-            # ── 遗物对路线的影响 ──
-            relic_list_map = p_relics
-            relic_ids_map = {r.get("id", r.get("name", "")) for r in relic_list_map}
-            relic_route_notes = []
 
-            # 战后回血类 — 影响能承受多少场战斗
-            heal_per_fight = 0
-            if "BurningBlood" in relic_ids_map or "燃烧之血" in {r.get("name","") for r in relic_list_map}:
-                heal_per_fight += 6
-                relic_route_notes.append(f"燃烧之血：每场战后+6HP，可多打怪")
-            if "BlackBlood" in relic_ids_map or "黑暗之血" in {r.get("name","") for r in relic_list_map}:
-                heal_per_fight += 12
-                relic_route_notes.append(f"黑暗之血：每场战后+12HP，激进打精英")
-            if "MeatOnTheBone" in relic_ids_map:
-                if hp_pct <= 50:
-                    relic_route_notes.append("肉骨头：战后HP≤50%多回12HP，低血打怪反而赚")
-            if "BloodVial" in relic_ids_map or "小血瓶" in {r.get("name","") for r in relic_list_map}:
-                relic_route_notes.append("小血瓶：每场战斗开始+2HP")
-
-            # 金币类 — 影响商店价值
-            gold_bonus = ""
-            if "GoldenIdol" in relic_ids_map:
-                relic_route_notes.append("黄金神像：每场战后+25金币，商店路线价值更高")
-                gold_bonus = "（黄金神像加成）"
-            if "MembershipCard" in relic_ids_map:
-                relic_route_notes.append("会员卡：商店打折50%，商店路线极高价值")
-            if "TheCourier" in relic_ids_map:
-                relic_route_notes.append("送货员：商品不断货+打折，优先走商店")
-            if "AmethystAubergine" in relic_ids_map:
-                relic_route_notes.append("紫水晶茄子：敌人额外掉金币，多打怪攒钱")
-
-            # 精英战加成类 — 影响是否值得打精英
-            if "SlingOfCourage" in relic_ids_map:
-                relic_route_notes.append("勇气投石索：精英战+2力量，精英更安全")
-            if "BoomingConch" in relic_ids_map:
-                relic_route_notes.append("轰鸣海螺：精英战多抽3张，精英更安全")
-            if "Lizardtail" in relic_ids_map:
-                relic_route_notes.append("蜥蜴尾巴：死亡复活，可冒险打精英")
-
-            # 休息点类 — 影响休息点价值
-            if "DreamCatcher" in relic_ids_map:
-                relic_route_notes.append("捕梦网：休息时抽卡，休息点=休息+选牌")
-            if "Regal Pillow" in relic_ids_map or "RegalPillow" in relic_ids_map:
-                relic_route_notes.append("皇家枕头：休息多回15HP")
-            if "PeacePipe" in relic_ids_map:
-                relic_route_notes.append("和平烟斗：休息点可删牌，休息点价值更高")
-            if "Shovel" in relic_ids_map:
-                relic_route_notes.append("铲子：休息点可挖宝获遗物")
-
-            # 事件类
-            if "SsserpentHead" in relic_ids_map:
-                relic_route_notes.append("蛇头：事件中金币选项+50金，事件路线更赚")
-            if "JuzuBracelet" in relic_ids_map:
-                relic_route_notes.append("念珠手链：?节点必定事件不遇怪，未知路线更安全")
-
-            # 商店加血/加成类
-            if "MealTicket" in relic_ids_map:
-                relic_route_notes.append("餐券：进商店回血，商店路线=购物+回血")
-            if "MawBank" in relic_ids_map:
-                relic_route_notes.append("巨口储蓄罐：每层+金币，但商店消费会失效")
-
-            # 药水类
-            if "SacredBark" in relic_ids_map:
-                relic_route_notes.append("圣树皮：药水翻倍，精英战更有底气")
-            if "Sozu" in relic_ids_map:
-                relic_route_notes.append("添水：无法获得药水，不用考虑药水路线")
-            if "WhiteBeastStatue" in relic_ids_map:
-                relic_route_notes.append("白兽雕像：战后必掉药水，多打怪攒药水")
-            if "DelicateFrond" in relic_ids_map:
-                relic_route_notes.append("娇嫩蕨草：战斗开始药水栏自动填满，空栏=免费药水")
-            if "TinyMailbox" in relic_ids_map:
-                relic_route_notes.append("小邮箱：休息时获得药水，休息路线更赚")
-
-            # 精英额外掉落
-            if "BlackStar" in relic_ids_map:
-                relic_route_notes.append("黑星：精英多掉1遗物，打精英收益翻倍！")
-            if "WhiteStar" in relic_ids_map:
-                relic_route_notes.append("白星：精英多掉稀有卡，打精英拿好牌")
-            if "SwordOfStone" in relic_ids_map:
-                relic_route_notes.append("石之剑：打够精英后变强力遗物，优先精英路线")
-            if "WarHammer" in relic_ids_map:
-                relic_route_notes.append("战锤：打精英升级牌，精英路线加分")
-
-            # 普通怪额外掉落
-            if "PrayerWheel" in relic_ids_map:
-                relic_route_notes.append("转经轮：普通怪多掉1组卡，多打怪拿更多牌")
-
-            # 蛋类（拿牌自动升级）
-            egg_notes = []
-            if "MoltenEgg" in relic_ids_map:
-                egg_notes.append("攻击")
-            if "ToxicEgg" in relic_ids_map:
-                egg_notes.append("技能")
-            if "FrozenEgg" in relic_ids_map:
-                egg_notes.append("能力")
-            if egg_notes:
-                relic_route_notes.append(f"{'、'.join(egg_notes)}蛋：获得{'、'.join(egg_notes)}牌自动升级，多拿牌价值高")
-
-            # Boss战加成
-            if "Pantograph" in relic_ids_map:
-                relic_route_notes.append("缩放仪：Boss战开始回血，Boss前不必满血")
-            if "StoneCracker" in relic_ids_map:
-                relic_route_notes.append("碎石钻：Boss战自动升级牌")
-
-            # 金币受限
-            if "Ectoplasm" in relic_ids_map:
-                relic_route_notes.append("灵体外质：⚠ 无法获金币，商店路线无意义")
-            if "SealOfGold" in relic_ids_map:
-                relic_route_notes.append("黄金印：每回合花金币换能量，需要攒钱")
-
-            # 钨合金棍 — 减少HP损失
-            if "TungstenRod" in relic_ids_map:
-                relic_route_notes.append("钨合金棍：每次受伤-1HP，多场战斗累积省很多血")
-
-            # 永恒羽毛 — 牌组大时休息回更多血
-            if "EternalFeather" in relic_ids_map:
-                deck_size = len(self.deck_acquired) if self.deck_acquired else 10
-                heal_est = deck_size // 5 * 3
-                relic_route_notes.append(f"永恒羽毛：牌组{deck_size}张，休息额外回{heal_est}HP")
-
-            # 恶魔之舌 — 自伤回血
-            if "DemonTongue" in relic_ids_map:
-                relic_route_notes.append("恶魔之舌：首次自伤回等量HP，自伤流更安全")
-
-            # 皮草大衣 — 标记战斗敌人1HP
-            if "FurCoat" in relic_ids_map:
-                relic_route_notes.append("皮草大衣：部分战斗敌人只有1HP，可放心打怪")
-
-            # 休息点升级类
-            if "Girya" in relic_ids_map:
-                relic_route_notes.append("壶铃：休息点可+力量(最多3次)，休息路线更强")
-            if "StoneHumidifier" in relic_ids_map:
-                relic_route_notes.append("石炉加湿器：休息时+最大HP，休息路线长期收益高")
-            if "MiniatureTent" in relic_ids_map:
-                relic_route_notes.append("微型帐篷：休息点可选多个选项（回血+升级+删牌），休息极高价值")
-            if "MeatCleaver" in relic_ids_map:
-                relic_route_notes.append("切肉刀：休息点可烹饪，休息路线更多选择")
-
-            # 古茶具
-            if "VenerableTeaSet" in relic_ids_map or "FakeVenerableTeaSet" in relic_ids_map:
-                relic_route_notes.append("古茶具：休息后下场战斗+能量，休息→战斗路线最优")
-
-            # 活动星图
-            if "Planisphere" in relic_ids_map:
-                relic_route_notes.append("活动星图：进?房间回血，未知路线更安全")
-
-            # 招财异鱼
-            if "LuckyFysh" in relic_ids_map:
-                relic_route_notes.append("招财异鱼：获得牌+金币，多拿牌更赚")
-
-            # 圆顶礼帽
-            if "BowlerHat" in relic_ids_map:
-                relic_route_notes.append("圆顶礼帽：金币+20%，多打怪攒钱更快")
-
-            # 火龙果
-            if "DragonFruit" in relic_ids_map:
-                relic_route_notes.append("火龙果：获得金币+最大HP，打怪=攒钱+变壮")
-
-            # 战后回血补充
-            if "ChosenCheese" in relic_ids_map:
-                relic_route_notes.append("天选芝士：战后+最大HP，多打怪越来越壮")
-            if "BookOfFiveRings" in relic_ids_map:
-                relic_route_notes.append("五轮书：拿牌时回血，多拿牌=回血")
-            if "BookRepairKnife" in relic_ids_map:
-                relic_route_notes.append("修书小刀：敌人死于灾厄回血（灾厄流专属）")
-            if "FakeBloodVial" in relic_ids_map:
-                relic_route_notes.append("小血瓶？：每场开始+回血")
-
-            # 药水栏/药水生成
-            if "PetrifiedToad" in relic_ids_map:
-                relic_route_notes.append("石化蟾蜍：每场战斗开始得药水石头（15伤害）")
-            if "PotionBelt" in relic_ids_map:
-                relic_route_notes.append("药水腰带：多药水栏，可存更多药水")
-
-            # 战后奖励升级
-            if "LavaLamp" in relic_ids_map:
-                relic_route_notes.append("熔岩灯：不受伤打完→卡牌奖励全升级，值得完美通关")
-            if "SilverCrucible" in relic_ids_map:
-                relic_route_notes.append("白银熔炉：前几组卡牌奖励已升级")
-
-            # Boss额外掉落
-            if "LavaRock" in relic_ids_map:
-                relic_route_notes.append("熔岩石：第1阶段Boss多掉遗物")
-
-            # 蜥蜴尾巴（API里可能是LizardTail不是Lizardtail）
-            if "LizardTail" in relic_ids_map:
-                relic_route_notes.append("蜥蜴尾巴：死亡复活，可冒险打精英")
-
-            # 佩尔之牙 — 战后返还升级牌
-            if "PaelsTooth" in relic_ids_map:
-                relic_route_notes.append("佩尔之牙：战后升级+返还删除的牌")
-
-            relic_route_info = "\n".join(relic_route_notes) if relic_route_notes else ""
-            if heal_per_fight > 0:
-                relic_route_info = f"战后回血{heal_per_fight}HP/场\n" + relic_route_info
+            # ── 遗物对路线的影响（数据驱动，只取路线相关遗物） ──
+            relic_route_info = self._explain_relics(p_relics, context="map")
 
             prompt = f"""杀戮尖塔2路线规划。纯文字不用markdown。所有牌名遗物名用中文。极简。
 
@@ -1403,15 +874,59 @@ class AIAdvisorMixin:
 - Boss准备：{'牌组'+archetype+'成型中' if archetype != '未定型' else '牌组未定型，需要尽快确定方向'}
 {"遗物路线加成：" + chr(10) + relic_route_info if relic_route_info else ""}
 
-格式（不要多余解释）：
-★ 推荐路线X — 理由（考虑HP预算、金币、药水、牌组完成度、遗物加成）
-✗ 避开路线X — 理由
-⚠ 资源预警 — HP/金币/药水是否够撑到Boss？遗物能否补足短板
-📋 路线目标 — 接下来2-3层优先：拿牌/删牌/买装/回血/攒钱"""
+严格按以下格式输出，不要输出任何多余标题或分隔：
+推荐排名（按优先度从高到低，推荐2-3条最佳路线）：
+推荐1=路线X
+推荐2=路线Y
+推荐3=路线Z
 
-            advice = self._ask_llm(prompt)
+推荐路线X/Y/Z，理由如下：
+• 要点1（4-5条，考虑HP预算、金币、药水、牌组完成度、遗物加成、与其他路线对比）
+• 要点2
+• 要点3
+• 要点4
+总结一句话"""
+
+            advice = self.llm.ask(prompt)
             if not self._analysis_stale():
-                self._push_advice(advice, header="── 路线分析 ──────────────────────────")
+                import re as _re_map
+                # Parse ranked recommendations: "推荐1=路线4", "推荐2=路线7"
+                rankings = {}  # {route_num: priority}
+                for m in _re_map.finditer(r'推荐\s*(\d+)\s*[=＝:：]\s*路线\s*(\d+)', advice):
+                    priority = int(m.group(1))
+                    rn = int(m.group(2))
+                    rankings[rn] = priority
+
+                # Update route blocks with priority badges
+                for rn, priority in rankings.items():
+                    self._js(f'app.updateRouteLabel({rn},{priority})')
+
+                # Strip ranking lines and format noise from advice text
+                analysis_lines = []
+                for line in advice.split('\n'):
+                    stripped = line.strip()
+                    if _re_map.match(r'推荐\s*\d+\s*[=＝:：]\s*路线', stripped):
+                        continue
+                    if _re_map.match(r'路线\d+\s*[=＝]', stripped):
+                        continue
+                    if _re_map.match(r'^第[一二三四五六七八九十\d]+部分', stripped):
+                        continue
+                    if _re_map.match(r'^推荐排名', stripped):
+                        continue
+                    if stripped in ('...', '…'):
+                        continue
+                    if not stripped:
+                        if analysis_lines:
+                            analysis_lines.append('')
+                        continue
+                    analysis_lines.append(stripped)
+                while analysis_lines and not analysis_lines[0]:
+                    analysis_lines.pop(0)
+                while analysis_lines and not analysis_lines[-1]:
+                    analysis_lines.pop()
+                clean_advice = '\n'.join(analysis_lines)
+
+                self._push_advice(clean_advice, card_tooltips=False)
                 self._js('app.setTab("situation")')
         except Exception as e:
             if not self._analysis_stale():
@@ -1424,6 +939,8 @@ class AIAdvisorMixin:
         stype = state.get("state_type", "")
         is_removal = stype == "card_select"
         self._show_analyzing("⏳  分析移除中…" if is_removal else "⏳  分析选牌中…")
+        # Re-render scene to clear old highlights
+        self._display_card_reward(state)
         try:
             player  = self._get_player(state)
             cr      = state.get("card_reward") or state.get("card_select") or {}
@@ -1434,10 +951,27 @@ class AIAdvisorMixin:
             removed   = f"已移除：{', '.join(self.deck_removed)}" if self.deck_removed else ""
             arch_hint = f"期望流派：{self._deck_archetype}" if self._deck_archetype else ""
 
-            cards_str = "\n".join(
-                f"  [{i}] {c.get('name','')}{'+' if c.get('is_upgraded') else ''}  "
-                f"{CARD_DICT.get(c.get('name',''), self._clean_desc(c.get('description',''))[:40])}"
-                for i, c in enumerate(rewards)) or "  （无可选牌，可跳过）"
+            # Build card descriptions — use CardDB full desc for accurate AI reasoning
+            card_lines = []
+            for i, c in enumerate(rewards):
+                cname = c.get('name', '')
+                cupg = '+' if c.get('is_upgraded') else ''
+                desc = ""
+                if hasattr(self, 'cards'):
+                    detail = self.cards.detail(cname)
+                    if detail:
+                        desc = detail.get("desc_cn", "")
+                        ctype = detail.get("type", "")
+                        rarity = detail.get("rarity", "")
+                        kw = detail.get("keywords", "")
+                        if ctype or rarity:
+                            desc = f"[{ctype} {rarity}] {desc}"
+                        if kw:
+                            desc = f"{kw} {desc}"
+                if not desc:
+                    desc = self._clean_desc(c.get('description', ''))[:60]
+                card_lines.append(f"  [{i}] {cname}{cupg}  费:{c.get('cost','?')}  {desc}")
+            cards_str = "\n".join(card_lines) or "  （无可选牌，可跳过）"
 
             char = player.get('character', '?')
             smart_ctx = self._build_context("card_reward")
@@ -1466,23 +1000,39 @@ class AIAdvisorMixin:
 ★ 牌名 — 一句话理由
 💡 一句话总结"""
             else:
+                # Build full deck info for archetype-aware card selection
+                full_deck = []
+                api_deck = player.get("deck", [])
+                if api_deck:
+                    from collections import Counter as _Ctr
+                    deck_names = _Ctr(c.get("name", "?") for c in api_deck)
+                    full_deck_str = " ".join(f"{n}×{cnt}" if cnt > 1 else n for n, cnt in deck_names.most_common())
+                elif self.deck_acquired:
+                    full_deck_str = " ".join(self.deck_acquired)
+                else:
+                    full_deck_str = "初始牌组（打击×4 防御×4 出击）"
+
                 prompt = f"""杀戮尖塔2选牌建议。纯文字，不用markdown。所有牌名遗物名用中文。极简输出。
 
 {smart_ctx}
 
 {char} HP{player.get('hp')}/{player.get('max_hp')} 幕{run.get('act')}层{run.get('floor')}
-遗物：{relics}  {deck_info}  {removed}  {arch_hint}
+遗物：{relics}
+当前牌组({len(api_deck) or '?'}张)：{full_deck_str}
+{removed}
+{f"流派方向：{self._deck_archetype}" if self._deck_archetype else "尚未定型，根据奖励牌判断最优方向"}
 
 奖励牌：
 {cards_str}
 
+重要：必须结合当前牌组构成和流派方向来选牌。不只看单张牌强度，要看它和现有牌组的配合。
 格式（每行一条，不要多余解释）：
-★ 牌名 — 一句话理由（推荐拿的）
-○ 牌名 — 一句话理由（可以考虑的）
-✗ 牌名 — 一句话理由（不推荐的）
+★ 牌名 — 理由（结合流派和牌组构成分析，为什么这张最适合当前构建）
+○ 牌名 — 理由（可以考虑的备选）
+✗ 牌名 — 理由（为什么不适合当前构建）
 方向：一句话当前流派+缺什么"""
 
-            advice = self._ask_llm(prompt)
+            advice = self.llm.ask(prompt)
 
             if not self._analysis_stale():
                 full_text = advice
@@ -1498,7 +1048,7 @@ class AIAdvisorMixin:
                     break
 
         except Exception as e:
-            self._js(f'app.updateScene({{type:"html",html:{json.dumps(_html.escape(f"⚠ 选牌分析失败：{e}"))}}})')
+            self._push_scene(_html.escape(f"⚠ 选牌分析失败：{e}"), tab=None)
         finally:
             self._busy_strat = False
             self._card_analyzed = True
@@ -1522,6 +1072,11 @@ class AIAdvisorMixin:
 
             scene_cn = {"event":"随机事件","rest":"休息点","rest_site":"休息点","shop":"商店","treasure":"宝箱"}
             scene = scene_cn.get(stype, stype)
+
+            # Context-aware relic info for each scene type
+            relic_ctx = {"event": "combat", "rest": "map_rest", "rest_site": "map_rest",
+                         "shop": "map_shop"}.get(stype, "combat")
+            relic_info = self._explain_relics(player.get('relics', []), context=relic_ctx)
 
             extra = ""
             if stype == "event":
@@ -1550,10 +1105,11 @@ class AIAdvisorMixin:
 遗物：{relics}
 {'已选牌组：'+', '.join(self.deck_acquired) if self.deck_acquired else '初始牌组'}
 {'流派：'+self._deck_archetype if self._deck_archetype else ''}
+{"休息点相关遗物效果：" + chr(10) + relic_info if relic_info else ""}
 
 格式：
 ★ 推荐：补血 或 锻造[牌名]
-理由：一句话（考虑HP百分比、接下来的路线、升级哪张牌收益最大）
+理由：一句话（考虑HP百分比、遗物效果、接下来的路线、升级哪张牌收益最大）
 💡 如果锻造，说明升级后的效果变化"""
             elif stype == "shop":
                 shop  = state.get("shop", {})
@@ -1566,7 +1122,12 @@ class AIAdvisorMixin:
                     cost = si.get("cost", "?")
                     if cat == "card":
                         name = si.get("card_name", "?")
-                        hint = CARD_DICT.get(name, si.get("card_description", "")[:30])
+                        hint = ""
+                        if hasattr(self, 'cards'):
+                            d = self.cards.detail(name)
+                            if d: hint = d.get("desc_cn", "")
+                        if not hint:
+                            hint = si.get("card_description", "")[:40]
                         sale = " 🏷折扣" if si.get("on_sale") else ""
                         items.append(f"  牌·{name}（{cost}金{sale}）：{hint}")
                     elif cat == "relic":
@@ -1583,13 +1144,14 @@ class AIAdvisorMixin:
 
 商店物品：
 {items_str}
+{"商店相关遗物效果：" + chr(10) + relic_info if relic_info else ""}
 
 给出建议：优先买什么，哪些不值得。格式：
 推荐购买：（列出物品及理由）
 可以考虑：（性价比分析）
 跳过：（不值得的原因）
 删牌建议：（如果有删牌服务）"""
-                advice = self._ask_llm(prompt)
+                advice = self.llm.ask(prompt)
                 if not self._analysis_stale():
                     self._push_advice(advice)
                     self._js('app.setTab("situation")')
@@ -1597,7 +1159,7 @@ class AIAdvisorMixin:
             else:  # treasure
                 prompt = f"杀戮尖塔2宝箱，直接拿。HP：{player.get('hp')}/{player.get('max_hp')}，幕{run.get('act')}·层{run.get('floor')}。一句话说说拿到宝箱对当前局面的影响。"
 
-            advice = self._ask_llm(prompt)
+            advice = self.llm.ask(prompt)
             if not self._analysis_stale():
                 self._push_advice(advice)
                 self._js('app.setTab("situation")')
@@ -1676,8 +1238,9 @@ class AIAdvisorMixin:
 核心需求：（接下来最需要找什么牌/遗物）
 风险提示：（当前需要注意什么）"""
 
-            result = self._ask_llm(prompt)
+            result = self.llm.ask(prompt)
             result_html = self._render_formatted_html(result, header="── 开局分析 ──────────────────────────")
+            result_html = self._add_card_tooltips(result_html)
             self._js(f'app.updateDeckAnalysis({json.dumps(result_html)})')
 
             # 提取流派
@@ -1716,12 +1279,13 @@ class AIAdvisorMixin:
 最优方向：（继续发展这个方向需要什么）
 次优方向：（备用路线）
 当前缺口：（最需要哪类牌/遗物）"""
-                result = self._ask_llm(prompt)
+                result = self.llm.ask(prompt)
                 full_text = (f"── 已选牌 ────────────────────────────\n"
                              f"{', '.join(self.deck_acquired)}\n\n"
                              f"── 方向分析 ──────────────────────────\n"
                              + result)
                 result_html = self._render_formatted_html(full_text)
+                result_html = self._add_card_tooltips(result_html)
                 self._js(f'app.updateDeckAnalysis({json.dumps(result_html)})')
             except Exception:
                 pass
@@ -1759,8 +1323,11 @@ class AIAdvisorMixin:
                     route_summary.append(f"第{entry.get('floor','')}层战斗 vs {enemies} (损{hp_loss}HP)")
             route_text = "\n".join(route_summary) if route_summary else "刚开局"
 
+            char_cards_ref = ""
+
             prompt = f"""你是杀戮尖塔2卡组构建顾问。纯文字，不用markdown符号。简洁扼要。
-【严禁英文】所有牌名、遗物名、角色名必须用中文，不许出现任何英文ID或英文括号注释。违反此规则的输出无效。
+【严禁英文】所有牌名必须用中文。只使用下方牌名列表中的名字，不要自己编造牌名。
+{char_cards_ref}
 
 {smart_ctx}
 {lessons}
@@ -1785,8 +1352,9 @@ class AIAdvisorMixin:
 避雷：不拿什么，为什么
 打法：当前牌组怎么打（简述回合套路）"""
 
-            result = self._ask_llm(prompt)
+            result = self.llm.ask(prompt)
             result_html = self._render_formatted_html(result)
+            result_html = self._add_card_tooltips(result_html)
             self._js(f'app.updateDeckAnalysis({json.dumps(result_html)})')
 
             # 保存分析文本到实例变量（供 session 持久化使用）
@@ -1871,12 +1439,12 @@ class AIAdvisorMixin:
 
 请结合策略知识和当前游戏状态给出针对性的回答。简洁实用。"""
 
-            answer = self._ask_llm(prompt)
+            answer = self.llm.ask(prompt)
             full_text = f"❓ {question}\n\n{answer}"
             answer_html = self._render_formatted_html(full_text)
-            self._js(f'app.updateScene({{type:"html",html:{json.dumps(answer_html)}}})')
-            self._js('app.setTab("situation")')
+            answer_html = self._add_card_tooltips(answer_html)
+            self._push_scene(answer_html)
         except Exception as e:
-            self._js(f'app.updateScene({{type:"html",html:{json.dumps(_html.escape(f"⚠ 提问失败：{e}"))}}})')
+            self._push_scene(_html.escape(f"⚠ 提问失败：{e}"), tab=None)
         finally:
             self._js('app.setButtonState("btn-situation", "◆  求策·当前形势  ◆", false)')

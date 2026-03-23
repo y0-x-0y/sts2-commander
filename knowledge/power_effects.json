@@ -1,0 +1,362 @@
+{
+  "Strength": {
+    "name_cn": "力量",
+    "type": "buff",
+    "effect": "每点力量增加所有攻击牌伤害",
+    "calc": "+attack_damage"
+  },
+  "Dexterity": {
+    "name_cn": "敏捷",
+    "type": "buff",
+    "effect": "每点敏捷增加所有技能牌格挡",
+    "calc": "+block"
+  },
+  "Focus": {
+    "name_cn": "集中",
+    "type": "buff",
+    "effect": "每点集中增加充能球效果",
+    "calc": "+orb_effect"
+  },
+  "Weak": {
+    "name_cn": "虚弱",
+    "type": "debuff",
+    "effect": "攻击伤害×0.75（减25%）",
+    "calc": "attack*0.75"
+  },
+  "Vulnerable": {
+    "name_cn": "易伤",
+    "type": "debuff",
+    "effect": "受到伤害×1.5（增50%）",
+    "calc": "damage_taken*1.5"
+  },
+  "Frail": {
+    "name_cn": "脆弱",
+    "type": "debuff",
+    "effect": "格挡×0.75（减25%）",
+    "calc": "block*0.75"
+  },
+  "Vigor": {
+    "name_cn": "活力",
+    "type": "buff",
+    "effect": "下次攻击额外造成X伤害，用后消失",
+    "calc": "+next_attack"
+  },
+  "DoubleDamage": {
+    "name_cn": "双倍伤害",
+    "type": "buff",
+    "effect": "下次攻击伤害翻倍",
+    "calc": "attack*2"
+  },
+  "Enrage": {
+    "name_cn": "狂怒",
+    "type": "buff",
+    "effect": "每受一次攻击+X力量",
+    "calc": "+strength_on_hit"
+  },
+  "Aggression": {
+    "name_cn": "侵略",
+    "type": "buff",
+    "effect": "攻击敌人额外造成X伤害",
+    "calc": "+attack_damage"
+  },
+  "Lethality": {
+    "name_cn": "致命",
+    "type": "buff",
+    "effect": "攻击牌造成额外伤害",
+    "calc": "+attack_damage"
+  },
+  "Thorns": {
+    "name_cn": "荆棘",
+    "type": "buff",
+    "effect": "被攻击时反弹X伤害给攻击者",
+    "calc": "reflect_damage"
+  },
+  "Plating": {
+    "name_cn": "覆甲",
+    "type": "buff",
+    "effect": "每回合获得X格挡",
+    "calc": "+block_per_turn"
+  },
+  "Metallicize": {
+    "name_cn": "金属化",
+    "type": "buff",
+    "effect": "每回合结束获得X格挡",
+    "calc": "+block_per_turn"
+  },
+  "Barricade": {
+    "name_cn": "壁垒",
+    "type": "buff",
+    "effect": "格挡不会在回合结束时消失",
+    "calc": "block_persists"
+  },
+  "Buffer": {
+    "name_cn": "缓冲",
+    "type": "buff",
+    "effect": "抵消X次伤害（降为0）",
+    "calc": "negate_damage"
+  },
+  "Intangible": {
+    "name_cn": "无实体",
+    "type": "buff",
+    "effect": "所有伤害降为1",
+    "calc": "all_damage=1"
+  },
+  "FlameBarrier": {
+    "name_cn": "烈焰屏障",
+    "type": "buff",
+    "effect": "被攻击时对攻击者造成X伤害并获得格挡",
+    "calc": "reflect+block"
+  },
+  "Artifact": {
+    "name_cn": "神器",
+    "type": "buff",
+    "effect": "抵消X次负面效果",
+    "calc": "negate_debuff"
+  },
+  "Retain": {
+    "name_cn": "保留",
+    "type": "buff",
+    "effect": "手牌不会在回合结束时丢弃",
+    "calc": "hand_persists"
+  },
+  "DrawCardsNextTurn": {
+    "name_cn": "下回合抽牌",
+    "type": "buff",
+    "effect": "下回合额外抽X张牌",
+    "calc": "+draw_next"
+  },
+  "EnergyNextTurn": {
+    "name_cn": "下回合能量",
+    "type": "buff",
+    "effect": "下回合+X能量",
+    "calc": "+energy_next"
+  },
+  "NoDraw": {
+    "name_cn": "无法抽牌",
+    "type": "debuff",
+    "effect": "无法抽牌",
+    "calc": "no_draw"
+  },
+  "Confused": {
+    "name_cn": "混乱",
+    "type": "debuff",
+    "effect": "手牌费用随机",
+    "calc": "random_cost"
+  },
+  "Burst": {
+    "name_cn": "爆发",
+    "type": "buff",
+    "effect": "下X张技能牌打出两次",
+    "calc": "double_skill"
+  },
+  "Duplication": {
+    "name_cn": "复制",
+    "type": "buff",
+    "effect": "下张牌打出两次",
+    "calc": "double_next"
+  },
+  "EchoForm": {
+    "name_cn": "回响形态",
+    "type": "buff",
+    "effect": "每回合第一张牌打出两次",
+    "calc": "double_first"
+  },
+  "Poison": {
+    "name_cn": "中毒",
+    "type": "debuff",
+    "effect": "回合开始受X伤害，然后层数-1",
+    "calc": "dot_damage"
+  },
+  "NoxiousFumes": {
+    "name_cn": "剧毒烟雾",
+    "type": "buff",
+    "effect": "每回合对所有敌人施加X中毒",
+    "calc": "+poison_all"
+  },
+  "Constrict": {
+    "name_cn": "缠绕",
+    "type": "debuff",
+    "effect": "回合结束受X伤害",
+    "calc": "dot_damage"
+  },
+  "Regen": {
+    "name_cn": "再生",
+    "type": "buff",
+    "effect": "每回合恢复X生命",
+    "calc": "+heal_per_turn"
+  },
+  "DemonForm": {
+    "name_cn": "恶魔形态",
+    "type": "buff",
+    "effect": "每回合+X力量",
+    "calc": "+strength_per_turn"
+  },
+  "Curious": {
+    "name_cn": "好奇心",
+    "type": "buff",
+    "effect": "玩家使用能力牌时此怪+1力量",
+    "calc": "+strength_on_power"
+  },
+  "Minion": {
+    "name_cn": "仆从",
+    "type": "buff",
+    "effect": "召唤物，主人死后一起死",
+    "calc": "dies_with_master"
+  },
+  "CurlUp": {
+    "name_cn": "卷曲",
+    "type": "buff",
+    "effect": "首次受攻击时获得X格挡",
+    "calc": "+block_first_hit"
+  },
+  "Angry": {
+    "name_cn": "愤怒",
+    "type": "buff",
+    "effect": "每受一次攻击+X力量",
+    "calc": "+strength_on_hit"
+  },
+  "SporeCloud": {
+    "name_cn": "孢子云",
+    "type": "buff",
+    "effect": "死亡时对玩家施加X虚弱",
+    "calc": "death_effect"
+  },
+  "Slow": {
+    "name_cn": "减速",
+    "type": "debuff",
+    "effect": "玩家每打一张牌此敌受伤+10%",
+    "calc": "+damage_taken_per_card"
+  },
+  "NoBlock": {
+    "name_cn": "无法格挡",
+    "type": "debuff",
+    "effect": "无法获得格挡",
+    "calc": "no_block"
+  },
+  "DieForYou": {
+    "name_cn": "为你而死",
+    "type": "buff",
+    "effect": "当主人受到未格挡伤害时，此召唤物替主人承受并死亡。永久能力。可通过护卫牌复活",
+    "calc": "redirect_damage"
+  },
+  "NecroMastery": {
+    "name_cn": "亡灵精通",
+    "type": "buff",
+    "effect": "召唤奥斯提。奥斯提受伤时所有敌人受等量伤害",
+    "calc": "aoe_on_ally_hurt"
+  },
+  "Calamity": {
+    "name_cn": "灾厄",
+    "type": "debuff",
+    "effect": "灾厄层数，触发特殊卡牌效果",
+    "calc": "synergy_trigger"
+  },
+  "Ravenous": {
+    "name_cn": "饥饿",
+    "type": "buff",
+    "effect": "怪物特有：同伴死亡时获得力量但被击晕一回合（跳过攻击）",
+    "calc": "stun_on_ally_death+strength"
+  },
+  "FeedingFrenzy": {
+    "name_cn": "狂食",
+    "type": "buff",
+    "effect": "同伴死亡时增加力量和最大HP",
+    "calc": "+strength_on_ally_death"
+  },
+  "Slumber": {
+    "name_cn": "沉睡",
+    "type": "buff",
+    "effect": "处于睡眠状态，被攻击后苏醒并行动",
+    "calc": "wake_on_hit"
+  },
+  "HardenedShell": {
+    "name_cn": "硬壳",
+    "type": "buff",
+    "effect": "受到的伤害不超过X",
+    "calc": "damage_cap"
+  },
+  "Doom": {
+    "name_cn": "厄运",
+    "type": "debuff",
+    "effect": "回合结束受X伤害",
+    "calc": "dot_damage"
+  },
+  "SicEm": {
+    "name_cn": "追击",
+    "type": "debuff",
+    "effect": "被标记追击的敌人受到额外伤害",
+    "calc": "+damage_taken"
+  },
+  "Shrink": {
+    "name_cn": "缩小",
+    "type": "debuff",
+    "effect": "力量-X",
+    "calc": "-strength"
+  },
+  "Flanking": {
+    "name_cn": "夹击",
+    "type": "debuff",
+    "effect": "被夹击时受伤增加",
+    "calc": "+damage_taken"
+  },
+  "Stun": {
+    "name_cn": "击晕",
+    "type": "debuff",
+    "effect": "跳过本回合行动",
+    "calc": "skip_turn"
+  },
+  "Entangle": {
+    "name_cn": "缠绕",
+    "type": "debuff",
+    "effect": "无法打出攻击牌",
+    "calc": "no_attack"
+  },
+  "MindRot": {
+    "name_cn": "精神腐蚀",
+    "type": "debuff",
+    "effect": "回合结束丢弃X张手牌",
+    "calc": "discard_cards"
+  },
+  "WasteAway": {
+    "name_cn": "衰败",
+    "type": "debuff",
+    "effect": "力量每回合-1",
+    "calc": "-strength_per_turn"
+  },
+  "Strangle": {
+    "name_cn": "窒息",
+    "type": "debuff",
+    "effect": "无法打出技能牌",
+    "calc": "no_skill"
+  },
+  "Corruption": {
+    "name_cn": "腐化",
+    "type": "buff",
+    "effect": "技能牌费用为0但使用后消耗",
+    "calc": "skill_cost=0+exhaust"
+  },
+  "Panache": {
+    "name_cn": "华彩",
+    "type": "buff",
+    "effect": "每打5张牌对全体敌人造成X伤害",
+    "calc": "aoe_per_5_cards"
+  },
+  "Colossus": {
+    "name_cn": "巨像",
+    "type": "buff",
+    "effect": "受伤减少X（固定减伤）",
+    "calc": "-damage_taken_flat"
+  },
+  "TemporaryStrength": {
+    "name_cn": "临时力量",
+    "type": "buff",
+    "effect": "本回合+X力量，回合结束失去",
+    "calc": "+strength_temp"
+  },
+  "TemporaryDexterity": {
+    "name_cn": "临时敏捷",
+    "type": "buff",
+    "effect": "本回合+X敏捷，回合结束失去",
+    "calc": "+dexterity_temp"
+  }
+}

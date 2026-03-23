@@ -1,234 +1,257 @@
-# STS2 Commander — Slay the Spire 2 战略指挥官
+<h1 align="center">
+  STS2 Commander
+  <br>
+  <sub>Slay the Spire 2 — Real-time Strategy Overlay</sub>
+</h1>
 
-A real-time strategy commander for Slay the Spire 2: offline simulator, AI-powered overlay, knowledge base, learning system, and MCP bridge.
+<p align="center">
+  A real-time decision engine for Slay the Spire 2.
+  <br>
+  Reads game state via MCP API. Analyzes every decision point. Covers every scene.
+</p>
 
-杀戮尖塔2 实时战略指挥官：离线模拟器、AI 驱动的 Overlay、知识库、学习系统、MCP 桥接。
-
----
-
-## Overlay UI / 界面预览
-
-Royal Purple theme — the overlay covers every in-game scene with real-time AI advice.
-
-皇室紫主题 — Overlay 覆盖所有游戏场景，提供实时 AI 策略建议。
-
-<div align="center">
-<img src="docs/royal_purple_combat.png" alt="Combat overlay — battle analysis and card play advice" width="800">
-<br><sub>▲ Combat — 战斗分析 + 出牌建议</sub>
-<br><br>
-<img src="docs/royal_purple_mid.png" alt="Elite combat overlay — threat assessment" width="800">
-<br><sub>▲ Elite Combat — 精英战威胁评估</sub>
-<br><br>
-<img src="docs/royal_purple_more.png" alt="Map route analysis — AI path recommendation" width="800">
-<br><sub>▲ Map & Route Analysis — 地图路线 AI 推荐</sub>
-<br><br>
-<img src="docs/royal_purple_event.png" alt="Event and shop — optimal choice analysis" width="800">
-<br><sub>▲ Event & Shop — 事件最优选择分析</sub>
-</div>
-
-<br>
-
-> 12 scene types covered. Clone the repo and open any HTML in [`tests/reference/`](tests/reference/) to preview the full interactive UI.
->
-> 覆盖 12 种场景。克隆仓库后打开 [`tests/reference/`](tests/reference/) 下的 HTML 即可预览完整交互 UI。
+<p align="center">
+  杀戮尖塔2 实时策略指挥官 — 通过 MCP API 读取游戏状态，覆盖全场景的策略分析浮窗。
+</p>
 
 ---
 
-## Features / 功能一览
+## Features
 
-| Feature | Description | 功能 | 说明 |
-|---------|-------------|------|------|
-| Offline Simulator | Zero-token, pure-Python battle simulation + full 3-act run | 离线模拟器 | 0 token 消耗，纯 Python 战斗模拟 + 三幕全流程 |
-| Online Overlay | CustomTkinter UI with real-time in-game advice | 在线 Overlay | CustomTkinter UI，实时对局建议 |
-| Knowledge Base | 10 JSON files covering cards, monsters, bosses, events, relics | 知识库 | 10 个 JSON 文件，覆盖卡牌、怪物、Boss、事件、遗物 |
-| Learning System | Replay analysis → trend detection → experience extraction | 学习系统 | 对局回放 → 趋势分析 → 经验提炼 |
-| MCP Bridge | Connect to the live game via the STS2MCP mod | MCP 桥接 | 通过 STS2MCP mod 连接游戏进程 |
+| Scene | What it does |
+|:------|:-------------|
+| **Combat** | Play order with numbered badges, damage/block pre-calculated with strength/weakness/vulnerability, draw pile & discard pile awareness, cross-turn tempo planning |
+| **Map** | All forking paths visualized with node icons, top 2-3 routes ranked by priority, relic-aware path scoring (healing/elite/shop/rest) |
+| **Card Reward** | Selection based on full deck composition and archetype direction, not just individual card strength |
+| **Shop** | Purchase priority with budget awareness and relic synergy |
+| **Event** | Pros/cons for every option |
+| **Rest** | Heal vs upgrade decision with relic awareness |
+| **Deck View** | Grouped by attack/skill/power, hover for type, rarity, full description |
 
----
-
-## Directory Structure / 目录结构
-
-```
-sts2-commander/
-├── data/                   Raw data (extracted from source) / 原始数据
-│   ├── cards/              577 cards / 577 张卡牌
-│   ├── monsters/           121 monsters / 121 个怪物
-│   ├── relics/             290 relics + 64 potions / 290 遗物 + 64 药水
-│   └── meta/               Ascension rules, epoch unlocks / 进阶规则、纪元解锁
-│
-├── knowledge/              Knowledge base (~850 KB, 10 files) / 知识库
-│   ├── archetype_matrix.json   5 characters × 35 archetypes / 5 角色 × 35 流派
-│   ├── monster_ai.json         76 monster AI patterns / 76 怪物 AI + 招式模式
-│   ├── card_tier_list.json     Card tier list (S/A/B/C/D) / 全卡分级
-│   ├── boss_counter_guide.json 8 boss matchup strategies / 8 Boss 对阵打法
-│   ├── card_synergy_index.json Card synergy index / 牌间协同关系
-│   ├── event_guide.json        66 event optimal choices / 66 事件最优选择
-│   ├── potion_guide.json       63 potions / 63 种药水
-│   ├── relic_pivot_rules.json  Relic pivot rules / 遗物转型规则
-│   ├── combat_rules.json       Combat calculation rules / 战斗计算规则
-│   └── lessons.json            Learning records / 学习记录
-│
-├── simulator/              Offline simulator / 离线模拟器
-│   ├── entities.py         Card / Player / Enemy / Buff
-│   ├── data_loader.py      Data loader / 数据加载
-│   ├── combat.py           Combat engine + card-play AI / 战斗引擎 + 出牌 AI
-│   ├── archetypes.py       35 archetype presets / 35 流派预设牌组
-│   ├── deckbuilder.py      Card pick / shop / event AI / 选牌、商店、事件 AI
-│   └── full_run.py         Full 3-act run simulation / 三幕全流程模拟
-│
-├── overlay/                Online overlay (CustomTkinter)
-│   ├── commander.py        Main class: UI + polling + dispatch
-│   ├── constants.py        Translation dicts, colors, config / 翻译字典、颜色、配置
-│   ├── display.py          UI display methods / UI 显示方法
-│   ├── ai_advisor.py       LLM calls + strategy prompts / LLM 调用 + 策略 prompt
-│   ├── history.py          Logging, replay, post-game analysis / 日志、回放、复盘
-│   ├── data.py             Data loading, saves, sessions / 数据加载、存档、session
-│   └── launch.sh           Launch script / 启动脚本
-│
-├── scripts/                Utility scripts / 脚本工具
-├── tests/                  Tests + UI references / 测试 + UI 参考
-│   ├── reference/          Per-scene UI mockups (HTML) / 各场景 UI 设计稿
-│   └── themes/             Color theme explorations / 配色方案探索
-├── replays/                Game replays (gitignored) / 对局回放
-└── runtime/                Runtime data (gitignored) / 运行时数据
-```
+| 场景 | 说明 |
+|:-----|:-----|
+| **战斗** | 出牌顺序标注，伤害/格挡已算好力量/虚弱/易伤加成，分析摸牌堆和弃牌堆，跨回合节奏规划 |
+| **地图** | 展示所有分叉路线，推荐最优2-3条路径并标注优先级，考虑遗物加成 |
+| **选牌** | 基于当前牌组构成和流派方向分析，不只看单卡强度 |
+| **商店** | 购买优先级分析，结合金币预算和遗物效果 |
+| **事件** | 每个选项利弊分析 |
+| **休息** | 补血 vs 锻造决策，考虑遗物加成 |
+| **卡组** | 按攻击/技能/能力分组，hover 显示类型、稀有度、完整描述 |
 
 ---
 
-## Quick Start / 快速开始
-
-### Requirements / 环境要求
-
-- Python 3.12+
-- No additional dependencies (the simulator is pure Python)
-- 无额外依赖（模拟器为纯 Python）
-
-### Offline Simulator / 离线模拟器
+## Quick Start
 
 ```bash
-# Archetype battle test — 35 archetypes × 200 runs
-# 预设牌组战斗测试 — 35 流派 × 200 局
-python -m simulator 200
-
-# Full 3-act run — includes card picks, shop, events, rest sites
-# 三幕全流程模拟 — 含选牌、商店、事件、休息
-python -m simulator --full 100
-
-# High ascension test / 高进阶测试
-python -m simulator --full 100 --asc 10
+# Slay the Spire 2 must be running with MCP API enabled
+python3 -m overlay
 ```
-
-### Python API
-
-```python
-from simulator.full_run import batch_simulate, simulate_full_run
-
-# Archetype battle test / 预设牌组战斗测试
-r = batch_simulate("铁甲战士", "力量流", runs=200, asc=10)
-print(f"Win rate / 胜率: {r['winrate']*100:.1f}%")
-
-# Single full run / 单局全流程
-r = simulate_full_run("缺陷体", asc=5)
-print(f"{'Win' if r['won'] else 'Loss'}, reached floor {r['floor_reached']}")
-```
-
-### Learning System / 学习系统
-
-```bash
-# Simulate + learn: batch simulate and auto-extract lessons
-# 模拟+学习：批量模拟并自动提炼经验
-python scripts/learning_system.py simulate -c "铁甲战士" -n 15 -a 5
-
-# Check status / 查看状态
-python scripts/learning_system.py status
-
-# Review / Trends / Learn — 复盘 / 趋势 / 提炼
-python scripts/learning_system.py review
-python scripts/learning_system.py trends
-python scripts/learning_system.py learn
-```
-
-### Online Overlay / 在线 Overlay
-
-```bash
-./overlay/launch.sh
-```
-
-Requires the STS2MCP mod to be installed and the game to be running.
-需要安装 STS2MCP mod 并启动游戏。
 
 ---
 
-## Simulation Results / 模拟效果
+## Knowledge System
 
-### Full-Run Win Rates (3-act clear, 200 runs per archetype) / 全流程胜率
+Built on **full decompilation of the game's source code** — not wiki scraping, not guesswork. The entire game logic (card mechanics, monster AI patterns, relic interactions, power calculations) is extracted from the decompiled C# source, structured into queryable JSON databases, and fed into a multi-layered prompt system.
 
-| Archetype / 流派 | A0 | A5 | A10 |
-|-------------------|-----|-----|------|
-| Ironclad / 铁甲战士 — Exhaust / 消耗流 | 100% | 100% | 100% |
-| Ironclad / 铁甲战士 — Combo / 连击流 | 100% | 100% | 100% |
-| Ironclad / 铁甲战士 — Block Slam / 格挡撞击流 | 100% | 100% | 99.5% |
-| Ironclad / 铁甲战士 — Feed Heal / 喂食回血流 | 100% | 100% | 99.0% |
-| Ironclad / 铁甲战士 — Self-Harm / 自伤流 | 100% | 99.5% | 97.5% |
-| Ironclad / 铁甲战士 — Strike / 打击流 | 100% | 100% | 91.5% |
-| Ironclad / 铁甲战士 — Strength / 力量流 | 100% | 99.0% | 83.0% |
-| Silent / 静默猎手 — Discard / 弃牌流 | 100% | 100% | 100% |
-| Silent / 静默猎手 — Agility Block / 敏捷格挡流 | 100% | 100% | 100% |
-| Silent / 静默猎手 — Assassination / 暗杀流 | 100% | 100% | 100% |
-| Silent / 静默猎手 — Ghost Guard / 幽灵防御流 | 100% | 100% | 100% |
-| Silent / 静默猎手 — 0-Cost Rush / 0费速攻流 | 100% | 100% | 100% |
-| Silent / 静默猎手 — Shiv / 飞刀流 | 100% | 100% | 99.5% |
-| Silent / 静默猎手 — Poison / 毒素流 | 100% | 100% | 98.5% |
-| Defect / 缺陷体 — Focus All-Round / 集中全能流 | 100% | 100% | 100% |
-| Defect / 缺陷体 — Lightning / 闪电流 | 100% | 100% | 100% |
-| Defect / 缺陷体 — Dark Orb Burst / 暗球爆发流 | 100% | 100% | 100% |
-| Defect / 缺陷体 — 0-Cost Claw / 0费爪击流 | 100% | 100% | 100% |
-| Defect / 缺陷体 — Frost Shield / 冰霜护盾流 | 100% | 100% | 100% |
-| Defect / 缺陷体 — Energy Cycle / 能量循环流 | 100% | 100% | 99.5% |
-| Defect / 缺陷体 — Overload Burst / 超载爆发流 | 100% | 100% | 98.5% |
-| Heir / 储君 — 0-Cost Rush / 0费速攻流 | 100% | 100% | 100% |
-| Heir / 储君 — Particle Defense / 粒子防御流 | 100% | 100% | 100% |
-| Heir / 储君 — Heavy Strike / 重击流 | 100% | 100% | 99.5% |
-| Heir / 储君 — Astral Control / 星辰控制流 | 100% | 100% | 98.5% |
-| Heir / 储君 — Void Form / 虚空形态流 | 100% | 100% | 98.0% |
-| Heir / 储君 — Colorless Gen / 无色生成流 | 100% | 100% | 92.0% |
-| Heir / 储君 — Forge Warrior / 铸造战士流 | 100% | 100% | 90.5% |
-| Necrobinder / 亡灵契约师 — Soul Void / 灵魂虚无流 | 100% | 100% | 99.0% |
-| Necrobinder / 亡灵契约师 — High-Cost Execute / 高费斩杀流 | 100% | 100% | 99.0% |
-| Necrobinder / 亡灵契约师 — Fear Debuff / 恐惧削弱流 | 100% | 100% | 98.0% |
-| Necrobinder / 亡灵契约师 — Osty + Doom Hybrid / Osty+灾厄混合流 | 100% | 100% | 96.5% |
-| Necrobinder / 亡灵契约师 — Osty Summon / Osty召唤流 | 100% | 99.5% | 95.5% |
-| Necrobinder / 亡灵契约师 — Graveyard Recycle / 墓地回收流 | 100% | 100% | 94.0% |
-| Necrobinder / 亡灵契约师 — Doom / 灾厄流 | 100% | 100% | 91.0% |
+知识库基于**游戏源代码的完整反编译** — 不是wiki抄录，不是猜测。所有游戏逻辑（卡牌机制、怪物AI行为、遗物交互、增减益计算）都从反编译的C#源码中提取，结构化为可查询的JSON数据库，注入多层prompt系统。
 
-> **A10 average win rate across all archetypes: 97.7%**
->
-> **A10 全流派平均胜率：97.7%**
+### Data Pipeline
 
-### Character Strength (A10 Average) / 角色强度
+```
+Game Source (decompiled C#, 3000+ classes)
+        |
+        v
+  Structured Extraction
+  |-- 569 cards         full mechanics: cost, type, rarity, keywords, effects
+  |-- 289 relics        effects + scene context tags (combat/map/shop/rest/...)
+  |-- 61 potions        effects + optimal usage timing
+  |-- 111 monsters      AI behavior patterns, attack sequences, trigger conditions
+  |-- 60 powers         buff/debuff calculation rules (multiplicative/additive/flag)
+        |
+        v
+  Strategy Knowledge Base
+  |-- archetype_matrix         per-character archetypes, tiered by ascension level
+  |-- card_synergy_index       112 card combo patterns with trigger conditions
+  |-- card_tier_list           card ratings contextualized per character + ascension
+  |-- boss_counter_guide       boss-specific strategies and danger thresholds
+  |-- event_guide              67 events with option analysis and edge cases
+  |-- relic_pivot_rules        relic-triggered archetype transitions
+  '-- monster_ai               attack pattern prediction for AI sequencing
+```
 
-| Character / 角色 | A10 Avg Win Rate / A10 平均胜率 |
-|-------------------|-------------------------------|
-| Defect / 缺陷体 | 99.8% |
-| Silent / 静默猎手 | 99.7% |
-| Heir / 储君 | 96.9% |
-| Necrobinder / 亡灵契约师 | 96.1% |
-| Ironclad / 铁甲战士 | 95.8% |
+### Multi-layer Prompt Construction
+
+Each AI query is assembled from multiple context layers. Only relevant information is injected — the system doesn't dump everything, it queries what matters for the specific decision.
+
+每次AI查询从多个上下文层组装。只注入相关信息 — 系统不会全量灌入，而是针对具体决策点查询所需内容。
+
+**Layer 1 — Archetype Awareness**
+
+The system matches the player's current relics against the archetype matrix, scores archetype viability by ascension tier, detects relic-triggered archetype pivots, and injects the top 2-3 viable archetypes with their core cards and win conditions.
+
+```
+[亡灵契约师 A0 流派参考]
+  灵魂虚无流(S) 核心牌:虚空之唤、灰烬之灵、纠缠
+    combo: 虚空之唤→每回合塞虚无牌+书页风暴/亡魂牵引消耗获取价值
+  灾厄流(A) 核心牌:瘟疫、腐蚀之触、死亡之门
+    遗物协同: 松动羊毛剪(削弱灾厄牌的虚无副作用)
+```
+
+**Layer 2 — Battlefield State Processing**
+
+Every number the AI sees is pre-calculated. Strength, weakness, vulnerability, dexterity — all applied before the prompt is built. The AI doesn't need to do math.
+
+```
+Hand (all modifiers applied):
+  [0] 出击  cost:1  base 8 → actual 6 dmg  (weakness: ×0.75)
+  [3] 护卫  cost:1  [技能 基础] 召唤奥斯提（5HP）
+
+Enemy (strength applied to attack intent):
+  蜈蚣#2  HP:26/26  intent: 攻击 3×2 → actual 7×2=14 dmg  (str 4)
+  status: 饥饿×4
+```
+
+**Layer 3 — Effect Semantics**
+
+Raw buff names are meaningless to an LLM. The system looks up every active power, relic, and potion from the effects database and injects human-readable explanations of what they actually do in combat.
+
+```
+Battlefield effects:
+  虚弱(1): 攻击伤害×0.75
+  饥饿(4): 同伴死亡时获得力量但被击晕一回合（跳过攻击）
+  为你而死: 主人受到未格挡伤害时此召唤物替主人承受，永久能力，可复活
+
+Relic combat effects:
+  赤牛: 每场战斗开始时获得活力（首次攻击额外伤害）
+  松动羊毛剪: 每回合开始时移除手牌中1张状态/诅咒牌
+```
+
+**Layer 4 — Tactical Computation**
+
+Lethal detection, kill estimation, shuffle prediction, draw pile probability — all computed before the LLM sees anything.
+
+```
+Tactical:
+  危险：敌人总伤14，需格挡8点（否则掉到49HP）
+  预估3回合击杀（本回合输出≈13，敌人剩26HP）
+  摸牌堆仅3张，下回合将洗牌（弃牌堆5张回来）
+
+Draw pile: 防御 打击 出击
+Discard pile: 防御×2 护卫 打击
+```
+
+**Layer 5 — Scene-specific Context Filtering**
+
+Each scene type gets a different slice of the knowledge base. The system doesn't dump everything — it queries what's relevant.
+
+每个场景类型获取不同的知识切片。系统不会全量灌入，而是按场景查询相关内容。
+
+| Scene | What gets injected |
+|-------|-------------------|
+| **Combat** | Active buffs/debuffs explained, relic combat effects, pre-calculated damage for hand + enemies, draw/discard pile contents, lethal detection, kill estimation, shuffle prediction |
+| **Map** | Healing relics (e.g. Burning Blood: +6 HP per fight), elite incentive relics (e.g. Black Star: double elite relic drops), shop/rest/event relics, gold earning relics |
+| **Card Reward** | Full deck composition, archetype direction, card synergy index lookup, tier rating for current character + ascension |
+| **Shop** | Budget analysis, shop discount relics (e.g. Membership Card: 50% off), current deck gaps |
+| **Rest** | Rest-specific relics (e.g. Dream Catcher: pick a card when resting, Peace Pipe: remove a card), HP percentage calculation, upgrade value analysis |
+| **Event** | Event guide lookup from 67 pre-analyzed events, option-by-option risk/reward with edge cases |
+
+All of this is **data-driven**. Adding a new card, power, or relic means editing a JSON file. No code changes.
+
+全部**数据驱动**。添加新卡牌、效果或遗物只需编辑JSON文件，不改代码。
 
 ---
 
-## Game Version / 游戏版本
+## Architecture
 
-Data is based on Slay the Spire 2 EA (Early Access). All data was extracted from decompiled source code, not from STS1.
+Layered building-block design. Bottom layers are reused by everything above.
 
-数据基于 Slay the Spire 2 EA（Early Access）。所有数据从反编译源码提取，非 STS1。
+```
+  JSON Data               Edit to extend, no code changes
+  Utilities               _get_power_amount / _has_power / _pile_summary
+  Knowledge Lookup        _explain_powers / _explain_relics / _explain_potions
+  Render Blocks           _render_card -> _render_card_grid -> _render_grouped_cards
+  Scene Renderers         _display_combat / _display_map / _display_shop ...
+  AI Analysis             _ai_combat / _ai_map / _ai_card / _ai_node
+  Commander               State polling -> scene routing -> UI bridge
+```
 
-**STS2 ≠ STS1**: Card pools, monsters, relics, and mechanics are all different. For example, Accelerant triggers extra poison damage instead of doubling it; Rupture only triggers on self-damage.
-
-**STS2 ≠ STS1**：卡牌池、怪物、遗物、机制均不同。Accelerant（触媒）触发额外毒伤而非翻倍，Rupture 仅在自伤时触发。
+Design principles:
+- **Single source of truth** — one `_render_card` for all card displays, one `_render_entity_block` for all entities
+- **Data-driven** — buff/relic/potion effects live in JSON, AI queries what's relevant per scene
+- **Zero duplication** — change one method, every scene updates automatically
 
 ---
 
-## License / 许可证
+## Project Structure
 
-MIT
+```
+overlay/                    Core (11 modules, ~5000 lines)
+  commander.py                Controller: polling, scene routing
+  display.py                  Rendering: all UI building blocks
+  ai_advisor.py               AI: strategy analysis, prompt construction
+  data.py                     Data: saves, deck tracking
+  history.py                  History: combat log, post-run review
+  card_db.py                  Card database (single source, 569 cards)
+  knowledge_db.py             Knowledge base loader
+  llm_client.py               LLM interface
+  constants.py                Constants, paths
+  ui.html                     Frontend (pywebview)
+
+data/                       Game data (extracted from source)
+  cards/                      Card info (569 entries)
+  relics/                     Relics (289), Potions (61)
+  meta/                       Progress data
+
+knowledge/                  Strategy knowledge base
+  power_effects.json            60 buff/debuff mechanics
+  relic_effects.json            289 relic effects with context tags
+  potion_effects.json           61 potion effects
+  archetype_matrix.json         Archetype strategies
+  monster_ai.json               111 monster behavior patterns
+  event_guide.json              67 event analyses
+  boss_counter_guide.json       Boss counter strategies
+  card_tier_list.json           Card ratings
+  card_synergy_index.json       112 card combo patterns
+
+tests/reference/            UI reference HTML (11 scenes)
+```
+
+---
+
+## Extending
+
+<details>
+<summary><b>Add a new card</b></summary>
+
+Edit `data/cards/card_tooltip_db.json`:
+
+```json
+"CardName": {
+  "id": "CardId", "name_cn": "CardName",
+  "cost": 1, "type": "attack", "rarity": "common",
+  "keywords": "", "desc_cn": "Deal 10 damage."
+}
+```
+</details>
+
+<details>
+<summary><b>Add a new buff/debuff</b></summary>
+
+Edit `knowledge/power_effects.json`:
+
+```json
+"PowerId": {
+  "name_cn": "PowerName", "type": "buff",
+  "effect": "Gain 1 strength per turn"
+}
+```
+</details>
+
+<details>
+<summary><b>Add a relic effect</b></summary>
+
+Edit `knowledge/relic_effects.json` with context tags:
+
+`combat` / `map_heal` / `map_elite` / `map_shop` / `map_rest` / `potion` / `card_reward`
+</details>
+

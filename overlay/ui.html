@@ -21,7 +21,7 @@
     --debuff: #d47a30;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: text; user-select: text; }
 
   body {
     background: var(--bg);
@@ -111,20 +111,20 @@
   }
 
   .content {
-    padding: 14px;
+    padding: 10px 14px;
   }
 
   .divider {
     border: none;
     border-top: 1px solid rgba(90, 61, 138, 0.35);
-    margin: 12px 0;
+    margin: 6px 0;
   }
 
   .section-title {
     font-size: 12px;
     color: var(--gold);
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     letter-spacing: 0.5px;
   }
 
@@ -132,11 +132,11 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 10px 12px;
+    padding: 8px 10px;
     font-size: 13px;
-    line-height: 1.7;
+    line-height: 1.6;
     color: var(--text);
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     white-space: pre-wrap;
     word-wrap: break-word;
   }
@@ -150,9 +150,9 @@
 
   .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 6px;
-    margin-bottom: 10px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
   }
   .card-item {
     background: var(--card);
@@ -160,7 +160,7 @@
     border-radius: 6px;
     padding: 4px 8px;
     font-size: 11px;
-    overflow: hidden;
+    overflow: visible;
     transition: all 0.15s;
     cursor: default;
     position: relative;
@@ -177,7 +177,7 @@
     display: block;
     margin-top: 2px;
   }
-  /* tooltip handled by generic [data-desc] rule */
+  /* tooltip handled by .card-tooltip inside card */
   .card-item .card-name {
     color: var(--accent2);
     font-weight: 600;
@@ -242,7 +242,7 @@
 
   .enemy-row {
     display: flex;
-    gap: 12px;
+    gap: 6px;
     align-items: flex-start;
     flex-wrap: wrap;
   }
@@ -250,10 +250,15 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 10px 12px;
+    padding: 6px 10px;
     flex: 1;
-    min-width: 200px;
+    min-width: 160px;
   }
+  .enemy-block:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 8px rgba(212, 168, 64, 0.2);
+  }
+  .enemy-block:hover .card-tooltip { display: block; }
   .enemy-name {
     color: var(--hp);
     font-weight: 600;
@@ -319,32 +324,91 @@
     justify-content: center;
   }
 
+  /* Map node type colors — used in route display AND AI advice */
+  .node-elite { color: var(--hp); font-weight: 600; }
+  .node-rest { color: var(--buff); font-weight: 600; }
+  .node-shop { color: var(--gold); font-weight: 600; }
+  .node-event { color: var(--accent); }
+  .node-enemy { color: var(--debuff); }
+  .node-boss { color: var(--hp); font-weight: 700; }
+  .node-unknown { color: var(--dim); }
+
+  /* Route blocks — compact single-line with icon nodes */
   .route-block {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    font-size: 13px;
+    padding: 5px 10px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    min-height: 32px;
   }
   .route-block.recommended {
     border-color: var(--gold);
-    box-shadow: 0 0 10px rgba(212, 168, 64, 0.15);
+    box-shadow: 0 0 8px rgba(212, 168, 64, 0.15);
+  }
+  .route-badge {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    background: var(--gold);
+    color: #0a0610;
+    font-size: 10px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
   }
   .route-label {
-    font-weight: 600;
-    color: var(--accent2);
-    margin-bottom: 4px;
-  }
-  .route-nodes {
+    font-weight: 700;
     color: var(--dim);
-    font-size: 12px;
+    font-size: 10px;
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
   }
-  .route-nodes .node-elite { color: var(--hp); }
-  .route-nodes .node-rest { color: var(--buff); }
-  .route-nodes .node-shop { color: var(--gold); }
-  .route-nodes .node-event { color: var(--accent); }
-  .route-nodes .node-enemy { color: var(--debuff); }
+  .route-chain {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: wrap;
+  }
+  .route-chain .sep { color: var(--dim); font-size: 9px; opacity: 0.5; }
+  .route-meta {
+    color: var(--dim);
+    font-size: 10px;
+    margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Map node icons — small colored circles with SVG */
+  .map-node {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .map-node svg { width: 14px; height: 14px; }
+  .map-node.mn-enemy  { background: rgba(212,122,48,0.2); border: 1.5px solid var(--debuff); }
+  .map-node.mn-elite  { background: rgba(231,76,60,0.2);  border: 1.5px solid var(--hp); }
+  .map-node.mn-rest   { background: rgba(69,196,128,0.2); border: 1.5px solid var(--buff); }
+  .map-node.mn-shop   { background: rgba(212,168,64,0.2); border: 1.5px solid var(--gold); }
+  .map-node.mn-event  { background: rgba(155,111,212,0.2);border: 1.5px solid var(--accent); }
+  .map-node.mn-chest  { background: rgba(212,168,64,0.2); border: 1.5px solid var(--gold); }
+  .map-node.mn-boss   { background: rgba(231,76,60,0.25); border: 1.5px solid var(--hp); }
+  .map-node.mn-unknown{ background: rgba(168,154,184,0.15);border: 1.5px solid var(--dim); }
 
   .event-box {
     background: var(--card);
@@ -388,26 +452,29 @@
 
   .deck-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 6px;
-    margin-bottom: 10px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
   }
   .deck-card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 3px 7px;
-    font-size: 11px;
+    border-radius: 4px;
+    padding: 3px 5px;
+    font-size: 10px;
     transition: all 0.15s;
     cursor: default;
     position: relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .deck-card:hover {
     border-color: var(--gold);
     box-shadow: 0 0 8px rgba(212, 168, 64, 0.2);
     transform: translateY(-2px);
   }
-  /* tooltip handled by generic [data-desc] rule */
+  /* tooltip handled by .card-tooltip inside card */
   .deck-card .dc-name {
     color: var(--accent2);
     font-weight: 600;
@@ -447,29 +514,58 @@
   }
   .tl-text .dim { color: var(--dim); }
 
-  /* Inline card tooltip (for AI advice text) */
-  [data-desc] {
-    position: relative;
+  /* Card tooltip — expands INSIDE the card on hover, no border */
+  .card-tooltip {
+    display: none;
+    margin-top: 3px;
+    padding: 2px 0 0;
+    border-top: 1px solid rgba(90, 61, 138, 0.3);
+    background: transparent;
+    font-size: 10px;
+    font-weight: normal;
+    color: var(--dim);
+    line-height: 1.4;
   }
-  [data-desc]:hover::after {
-    content: attr(data-desc);
-    position: absolute;
-    bottom: 100%;
-    left: 0;
+  .card-tooltip .ct-desc { color: var(--text); display: block; margin-top: 2px; font-size: 10px; }
+  *:hover > .card-tooltip { display: block; }
+
+  /* Inline text tooltip (for card names in AI advice) */
+  .card-tip {
+    border-bottom: 1px dotted var(--accent2);
+    cursor: help;
+    position: relative;
+    color: var(--accent2);
+  }
+  .card-tip-box {
+    display: none;
+    position: fixed;
     background: #1a1030;
     border: 1px solid var(--gold);
-    border-radius: 4px;
-    padding: 4px 8px;
+    border-radius: 6px;
+    padding: 6px 10px;
     font-size: 11px;
     font-weight: normal;
     color: var(--text);
     white-space: normal;
     width: max-content;
-    max-width: 220px;
-    z-index: 100;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    max-width: 260px;
+    min-width: 120px;
+    z-index: 1000;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.7);
     pointer-events: none;
+    line-height: 1.6;
   }
+  .card-tip-box.visible { display: block; }
+  .card-tip-box .ct-cost { color: var(--gold); font-weight: 600; }
+  .card-tip-box .ct-type { color: var(--block); }
+  .card-tip-box .ct-rarity-普通 { color: var(--dim); }
+  .card-tip-box .ct-rarity-罕见 { color: var(--block); }
+  .card-tip-box .ct-rarity-稀有 { color: var(--gold); }
+  .card-tip-box .ct-rarity-基础 { color: var(--dim); }
+  .card-tip-box .ct-rarity-远古 { color: var(--accent2); }
+  .card-tip-box .ct-kw { color: var(--accent2); font-size: 10px; }
+  .card-tip-box .ct-sep { color: var(--dim); margin: 0 3px; }
+  .card-tip-box .ct-desc { color: var(--text); display: block; margin-top: 3px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 3px; }
 
   .stats-grid {
     display: grid;
@@ -511,6 +607,8 @@
     <span class="char-stat">HP: <span id="cs-hp" class="val hp">—</span></span>
     <span class="char-stat">金币: <span id="cs-gold" class="val gold">—</span></span>
     <span class="char-stat">遗物: <span id="cs-relics" class="val">0</span></span>
+    <span id="cs-energy-wrap" class="char-stat" style="display:none">能量: <span id="cs-energy" class="val gold">—</span></span>
+    <span id="cs-block-wrap" class="char-stat" style="display:none">格挡: <span id="cs-block" class="val blue">0</span></span>
   </div>
   <div class="tabs">
     <div class="tab active" data-tab="situation" onclick="app.setTab('situation')">当前形势</div>
@@ -520,7 +618,7 @@
   <div id="tab-situation" class="content">
     <div id="scene-content" class="textbox">等待进入游戏…</div>
     <hr class="divider">
-    <div class="section-title">AI 决策建议</div>
+    <div id="advice-title" class="section-title">AI 决策建议</div>
     <div id="advice-content" class="textbox" style="min-height:80px;">点击「求策」获取 AI 建议</div>
     <div class="ask-row">
       <input id="ask-input" class="ask-input" placeholder="询问 AI 顾问…" onkeydown="if(event.key==='Enter')app.sendQuestion()">
@@ -567,6 +665,27 @@ var app = {
     if (el) el.textContent = data.gold !== undefined ? data.gold : '—';
     el = document.getElementById('cs-relics');
     if (el) el.textContent = data.relics !== undefined ? data.relics : '0';
+    // Combat-only stats
+    var ew = document.getElementById('cs-energy-wrap');
+    var ee = document.getElementById('cs-energy');
+    if (ew && ee) {
+      if (data.energy !== undefined) {
+        ee.textContent = data.energy + '/' + data.maxEnergy;
+        ew.style.display = '';
+      } else {
+        ew.style.display = 'none';
+      }
+    }
+    var bw = document.getElementById('cs-block-wrap');
+    var be = document.getElementById('cs-block');
+    if (bw && be) {
+      if (data.block !== undefined && data.block > 0) {
+        be.textContent = data.block;
+        bw.style.display = '';
+      } else {
+        bw.style.display = 'none';
+      }
+    }
   },
 
   updateScene: function(data) {
@@ -591,19 +710,66 @@ var app = {
     }
   },
 
+  _fixTooltipPositions: function(container) {
+    if (!container) return;
+    container.querySelectorAll('.card-tip').forEach(function(tip) {
+      tip.addEventListener('mouseenter', function() {
+        var box = tip.querySelector('.card-tip-box');
+        if (!box) return;
+        var r = tip.getBoundingClientRect();
+        var bw = Math.min(260, window.innerWidth - 16);
+        var left = r.left;
+        if (left + bw > window.innerWidth - 8) left = window.innerWidth - bw - 8;
+        if (left < 4) left = 4;
+        box.style.left = left + 'px';
+        box.style.bottom = (window.innerHeight - r.top + 4) + 'px';
+        box.classList.add('visible');
+      });
+      tip.addEventListener('mouseleave', function() {
+        var box = tip.querySelector('.card-tip-box');
+        if (box) box.classList.remove('visible');
+      });
+    });
+  },
+
   updateAdvice: function(html) {
     var el = document.getElementById('advice-content');
-    if (el) el.innerHTML = html;
+    if (el) { el.innerHTML = html; app._fixTooltipPositions(el); }
+  },
+
+  highlightChoice: function(name, order) {
+    // Unified: find card-item or option-block by name, add gold border + badge.
+    // order > 0: numbered badge (1,2,3). order = 0: star badge (★). order < 0: gold border only.
+    var scene = document.getElementById('scene-content');
+    if (!scene) return;
+    var items = scene.querySelectorAll('.card-item:not(.recommended)');
+    for (var i = 0; i < items.length; i++) {
+      var nameEl = items[i].querySelector('.card-name');
+      if (!nameEl) continue;
+      var text = nameEl.textContent.trim().replace(/\+$/, '');
+      if (text === name) {
+        items[i].classList.add('recommended');
+        items[i].style.position = 'relative';
+        if (order >= 0) {
+          var badge = document.createElement('span');
+          badge.className = 'order-badge';
+          badge.style.cssText = 'position:absolute;top:-6px;right:-6px;background:var(--gold);color:#0a0610;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:1;';
+          badge.textContent = order > 0 ? order : '★';
+          items[i].prepend(badge);
+        }
+        break;
+      }
+    }
   },
 
   updateDeckList: function(html) {
     var el = document.getElementById('deck-list');
-    if (el) el.innerHTML = html;
+    if (el) { el.innerHTML = html; app._fixTooltipPositions(el); }
   },
 
   updateDeckAnalysis: function(html) {
     var el = document.getElementById('deck-analysis');
-    if (el) el.innerHTML = html;
+    if (el) { el.innerHTML = html; app._fixTooltipPositions(el); }
   },
 
   updateLogStats: function(html) {
@@ -631,7 +797,7 @@ var app = {
 
   highlightOption: function(optionName) {
     if (!optionName) return;
-    var name = optionName.trim().replace(/\+$/, '');  // Remove trailing +
+    var name = optionName.trim().replace(/\+$/, '');
     // Highlight option blocks (events)
     document.querySelectorAll('.option-block').forEach(function(b) {
       var label = b.querySelector('.option-label');
@@ -640,32 +806,38 @@ var app = {
         if (!label.textContent.endsWith(' ★')) label.textContent += ' ★';
       }
     });
-    // Highlight card items — match FIRST card with exact name (one at a time)
-    var matched = false;
-    document.querySelectorAll('.card-item:not(.recommended)').forEach(function(b) {
-      if (matched) return;
-      var el = b.querySelector('.card-name');
-      if (el) {
-        var cardText = el.textContent.trim().replace(/\+$/, '');
-        if (cardText === name) {
-          b.classList.add('recommended');
-          matched = true;
-        }
-      }
+    // Highlight card items — delegate to highlightChoice with ★ badge
+    app.highlightChoice(name, 0);
+  },
+
+  setAdviceTitle: function(title) {
+    var el = document.getElementById('advice-title');
+    if (el) el.textContent = title;
+  },
+
+  resetRouteLabels: function() {
+    document.querySelectorAll('.route-block').forEach(function(block) {
+      block.classList.remove('recommended');
+      var badge = block.querySelector('.route-badge');
+      if (badge) badge.remove();
+      var labelEl = block.querySelector('.route-label');
+      if (labelEl) labelEl.style.color = '';
     });
-    // Highlight deck cards — same logic
-    matched = false;
-    document.querySelectorAll('.deck-card:not(.recommended)').forEach(function(b) {
-      if (matched) return;
-      var el = b.querySelector('.dc-name');
-      if (el) {
-        var cardText = el.textContent.trim().replace(/\+$/, '');
-        if (cardText === name) {
-          b.classList.add('recommended');
-          matched = true;
-        }
-      }
-    });
+  },
+
+  updateRouteLabel: function(routeNum, priority) {
+    // priority: 1/2/3 = rank (gold border + numbered badge)
+    var block = document.querySelector('.route-block[data-route="' + routeNum + '"]');
+    if (!block) return;
+    block.classList.add('recommended');
+    var labelEl = block.querySelector('.route-label');
+    if (labelEl) labelEl.style.color = 'var(--gold)';
+    var old = block.querySelector('.route-badge');
+    if (old) old.remove();
+    var badge = document.createElement('span');
+    badge.className = 'route-badge';
+    badge.textContent = priority;
+    block.prepend(badge);
   },
 
   analyze: function(type) {

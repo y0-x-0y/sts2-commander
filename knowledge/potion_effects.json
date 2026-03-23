@@ -1,0 +1,246 @@
+{
+  "Ashwater": {
+    "name_cn": "灰水",
+    "desc": ""
+  },
+  "AttackPotion": {
+    "name_cn": "攻击药水",
+    "desc": ""
+  },
+  "BeetleJuice": {
+    "name_cn": "甲虫汁",
+    "desc": ""
+  },
+  "BlessingOfTheForge": {
+    "name_cn": "熔炉的祝福",
+    "desc": ""
+  },
+  "BlockPotion": {
+    "name_cn": "格挡药水",
+    "desc": ""
+  },
+  "BloodPotion": {
+    "name_cn": "鲜血药水",
+    "desc": ""
+  },
+  "BoneBrew": {
+    "name_cn": "骨头酿",
+    "desc": ""
+  },
+  "BottledPotential": {
+    "name_cn": "瓶装潜能",
+    "desc": ""
+  },
+  "Clarity": {
+    "name_cn": "明晰提取物",
+    "desc": ""
+  },
+  "ColorlessPotion": {
+    "name_cn": "无色药水",
+    "desc": ""
+  },
+  "CosmicConcoction": {
+    "name_cn": "宇宙药剂",
+    "desc": ""
+  },
+  "CunningPotion": {
+    "name_cn": "狡诈药水",
+    "desc": ""
+  },
+  "CureAll": {
+    "name_cn": "痊愈药水",
+    "desc": ""
+  },
+  "DeprecatedPotion": {
+    "name_cn": "废弃药水",
+    "desc": ""
+  },
+  "DexterityPotion": {
+    "name_cn": "敏捷药水",
+    "desc": ""
+  },
+  "DistilledChaos": {
+    "name_cn": "精炼混沌",
+    "desc": ""
+  },
+  "DropletOfPrecognition": {
+    "name_cn": "预知之滴",
+    "desc": ""
+  },
+  "Duplicator": {
+    "name_cn": "复制药水",
+    "desc": ""
+  },
+  "EnergyPotion": {
+    "name_cn": "能量药水",
+    "desc": ""
+  },
+  "EntropicBrew": {
+    "name_cn": "混沌药水",
+    "desc": ""
+  },
+  "EssenceOfDarkness": {
+    "name_cn": "黑暗精华",
+    "desc": ""
+  },
+  "ExplosiveAmpoule": {
+    "name_cn": "爆炸安瓿",
+    "desc": ""
+  },
+  "FirePotion": {
+    "name_cn": "火焰药水",
+    "desc": ""
+  },
+  "FlexPotion": {
+    "name_cn": "肌肉药水",
+    "desc": ""
+  },
+  "FocusPotion": {
+    "name_cn": "集中药水",
+    "desc": ""
+  },
+  "Fortifier": {
+    "name_cn": "固化药水",
+    "desc": ""
+  },
+  "FoulPotion": {
+    "name_cn": "污浊药水",
+    "desc": ""
+  },
+  "FruitJuice": {
+    "name_cn": "果汁",
+    "desc": ""
+  },
+  "FyshOil": {
+    "name_cn": "异鱼之油",
+    "desc": ""
+  },
+  "GamblersBrew": {
+    "name_cn": "赌徒特酿",
+    "desc": ""
+  },
+  "GigantificationPotion": {
+    "name_cn": "超巨化药水",
+    "desc": ""
+  },
+  "GlowwaterPotion": {
+    "name_cn": "发光水",
+    "desc": ""
+  },
+  "HeartOfIron": {
+    "name_cn": "铁心药水",
+    "desc": ""
+  },
+  "KingsCourage": {
+    "name_cn": "王之勇气",
+    "desc": ""
+  },
+  "LiquidBronze": {
+    "name_cn": "流动铜液",
+    "desc": ""
+  },
+  "LiquidMemories": {
+    "name_cn": "液态记忆",
+    "desc": ""
+  },
+  "LuckyTonic": {
+    "name_cn": "幸运补剂",
+    "desc": ""
+  },
+  "MazalethsGift": {
+    "name_cn": "马萨雷斯的赠礼",
+    "desc": ""
+  },
+  "OrobicAcid": {
+    "name_cn": "欧洛巴斯之酸",
+    "desc": ""
+  },
+  "PoisonPotion": {
+    "name_cn": "毒药水",
+    "desc": ""
+  },
+  "PotOfGhouls": {
+    "name_cn": "尸鬼瓮",
+    "desc": ""
+  },
+  "PotionOfBinding": {
+    "name_cn": "缚魂药水",
+    "desc": ""
+  },
+  "PotionOfCapacity": {
+    "name_cn": "扩容药水",
+    "desc": ""
+  },
+  "PotionOfDoom": {
+    "name_cn": "灾厄药水",
+    "desc": ""
+  },
+  "PotionShapedRock": {
+    "name_cn": "药水形状的石头",
+    "desc": ""
+  },
+  "PowderedDemise": {
+    "name_cn": "消亡粉末",
+    "desc": ""
+  },
+  "PowerPotion": {
+    "name_cn": "能力药水",
+    "desc": ""
+  },
+  "RadiantTincture": {
+    "name_cn": "明耀酊剂",
+    "desc": ""
+  },
+  "RegenPotion": {
+    "name_cn": "再生药水",
+    "desc": ""
+  },
+  "ShacklingPotion": {
+    "name_cn": "镣铐药水",
+    "desc": ""
+  },
+  "SkillPotion": {
+    "name_cn": "技能药水",
+    "desc": ""
+  },
+  "SneckoOil": {
+    "name_cn": "异蛇之油",
+    "desc": ""
+  },
+  "SoldiersStew": {
+    "name_cn": "士兵炖汤",
+    "desc": ""
+  },
+  "SpeedPotion": {
+    "name_cn": "速度药水",
+    "desc": ""
+  },
+  "StableSerum": {
+    "name_cn": "稳定血清",
+    "desc": ""
+  },
+  "StarPotion": {
+    "name_cn": "星星药水",
+    "desc": ""
+  },
+  "StrengthPotion": {
+    "name_cn": "力量药水",
+    "desc": ""
+  },
+  "SwiftPotion": {
+    "name_cn": "迅捷药水",
+    "desc": ""
+  },
+  "TouchOfInsanity": {
+    "name_cn": "癫狂之触",
+    "desc": ""
+  },
+  "VulnerablePotion": {
+    "name_cn": "易伤药水",
+    "desc": ""
+  },
+  "WeakPotion": {
+    "name_cn": "虚弱药水",
+    "desc": ""
+  }
+}

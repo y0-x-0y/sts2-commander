@@ -30,26 +30,19 @@ API_URL      = _CONFIG.get("api_url", "http://localhost:15526/api/v1/singleplaye
 LLM_CLI      = _CONFIG.get("llm_cli") or shutil.which("claude") or "claude"
 POLL_SECS    = _CONFIG.get("poll_interval_seconds", 0.8)
 
-# 数据文件（相对于项目目录）
-CARD_DB_FILE = _proj("runtime", "runtime_collected.json")
-CARD_DB_FULL = _proj("data", "cards", "card_database_full.json")
-CARD_DICT_FILE = _proj("data", "cards", "card_dict.json")
-SYSTEM_PROMPT_FILE = _proj("docs", "system_prompt.txt")
-EPOCHS_FILE = _proj("data", "meta", "epochs.json")
+# 数据文件
+CARD_DB_FILE   = _proj("runtime", "runtime_collected.json")
+EPOCHS_FILE    = _proj("data", "meta", "epochs.json")
 
 # 知识库文件
 ARCHETYPES_FILE = _proj("knowledge", "archetype_matrix.json")
 MONSTER_AI_FILE = _proj("knowledge", "monster_ai.json")
 EVENT_GUIDE_FILE = _proj("knowledge", "event_guide.json")
-POTION_GUIDE_FILE = _proj("knowledge", "potion_guide.json")
-RELIC_COMBAT_FILE = _proj("knowledge", "relic_combat_values.json")
-CARD_TIER_FILE = _proj("knowledge", "card_tier_list.json")
-MATRIX_FILE  = _proj("knowledge", "archetype_matrix.json")
-SYNERGY_FILE = _proj("knowledge", "card_synergy_index.json")
-PIVOT_FILE   = _proj("knowledge", "relic_pivot_rules.json")
-BOSS_FILE    = _proj("knowledge", "boss_counter_guide.json")
-RELIC_DATA_FILE  = _proj("data", "relics", "relics.json")
-POTION_DATA_FILE = _proj("data", "relics", "potions.json")
+CARD_TIER_FILE  = _proj("knowledge", "card_tier_list.json")
+MATRIX_FILE     = _proj("knowledge", "archetype_matrix.json")
+SYNERGY_FILE    = _proj("knowledge", "card_synergy_index.json")
+PIVOT_FILE      = _proj("knowledge", "relic_pivot_rules.json")
+BOSS_FILE       = _proj("knowledge", "boss_counter_guide.json")
 
 # 运行时文件
 HISTORY_FILE   = _proj("runtime", "run_history.json")

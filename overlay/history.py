@@ -170,7 +170,7 @@ class HistoryMixin:
 
 总共不超过150字。"""
 
-            review = self._ask_llm(prompt)
+            review = self.llm.ask(prompt)
 
             # 保存复盘结果
             lessons_file = os.path.expanduser("~/Projects/sts2/knowledge/lessons.json")
@@ -252,7 +252,7 @@ class HistoryMixin:
 2. 进步趋势：有没有在改善？
 3. 下一步建议：最该优先改进什么？"""
 
-            analysis = self._ask_llm(prompt)
+            analysis = self.llm.ask(prompt)
 
             # 保存到 player_profile.json
             profile_file = os.path.expanduser("~/Projects/sts2/knowledge/player_profile.json")
@@ -337,8 +337,7 @@ class HistoryMixin:
             rest   = leaving_state.get("rest_site", state.get("rest", {}))
             opts   = rest.get("options", [])
             chosen = next((o.get("label", o.get("type","")) for o in opts if o.get("was_chosen")), None)
-            cn = {"rest":"补血","smith":"锻造升级","recall":"孵化","toke":"抽牌","lift":"力量+","dig":"挖掘"}
-            action = cn.get(chosen, chosen) if chosen else "离开"
+            action = self._REST_LABELS[chosen][0] if chosen and chosen in self._REST_LABELS else (chosen or "离开")
             entry  = f"[{ts}]  幕{act}·层{floor}  ⌂ 休息点：{action}"
 
         elif leaving_type == "shop":
@@ -522,7 +521,8 @@ class HistoryMixin:
             log_html = "".join(tl_parts)
             self._js(f'app.updateLogTimeline({json.dumps(log_html)})')
         elif not self.run_log:
-            self._js(f'app.updateLogTimeline({json.dumps("<span class=\"dim\">本局尚无记录，开始游戏后自动记录</span>")})')
+            empty_msg = '<span class="dim">本局尚无记录，开始游戏后自动记录</span>'
+            self._js(f'app.updateLogTimeline({json.dumps(empty_msg)})')
 
         # ── Stats section (stats-grid with stat-box elements) ──
         fights = 0; total_hp_lost = 0; cards_picked = 0; cards_skipped = 0
@@ -614,7 +614,7 @@ class HistoryMixin:
         self._refresh_log()
         self._js(f'app.updateDeckAnalysis({json.dumps("  点击「求策·卡组」获取AI分析")})')
         self._js(f'app.updateDeckList({json.dumps("  新局开始…")})')
-        self._js(f'app.updateScene({{type:"html",html:{json.dumps("◌  新局，等待首个事件…")}}})')
+        self._push_scene("◌  新局，等待首个事件…", tab=None)
         self._clear_advice()
 
     def _save_run(self):

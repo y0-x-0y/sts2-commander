@@ -1,22 +1,14 @@
-# Python
 *.pyc
 __pycache__/
 .pytest_cache/
-
-# macOS
 .DS_Store
 
-# 运行时数据（自动生成）
 runtime/
 replays/
-screenshots/
-
-# 存档备份
 backup/
-archive/
-
-# 反编译源码（太大不提交）
+screenshots/
 decompiled/
+docs/
 
-# 本地配置
-# config.json  ← 保留在repo里作为模板
+.vscode/
+.idea/
