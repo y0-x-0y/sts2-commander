@@ -18,87 +18,59 @@
 
 ## Features
 
-| Scene | What it does |
-|:------|:-------------|
-| **Combat** | Play order with numbered badges, damage/block pre-calculated with strength/weakness/vulnerability, draw pile & discard pile awareness, cross-turn tempo planning |
-| **Map** | All forking paths visualized with node icons, top 2-3 routes ranked by priority, relic-aware path scoring (healing/elite/shop/rest) |
-| **Card Reward** | Selection based on full deck composition and archetype direction, not just individual card strength |
-| **Shop** | Purchase priority with budget awareness and relic synergy |
-| **Event** | Pros/cons for every option |
-| **Rest** | Heal vs upgrade decision with relic awareness |
-| **Deck View** | Grouped by attack/skill/power, hover for type, rarity, full description |
-
-| 场景 | 说明 |
-|:-----|:-----|
-| **战斗** | 出牌顺序标注，伤害/格挡已算好力量/虚弱/易伤加成，分析摸牌堆和弃牌堆，跨回合节奏规划 |
-| **地图** | 展示所有分叉路线，推荐最优2-3条路径并标注优先级，考虑遗物加成 |
-| **选牌** | 基于当前牌组构成和流派方向分析，不只看单卡强度 |
-| **商店** | 购买优先级分析，结合金币预算和遗物效果 |
-| **事件** | 每个选项利弊分析 |
-| **休息** | 补血 vs 锻造决策，考虑遗物加成 |
-| **卡组** | 按攻击/技能/能力分组，hover 显示类型、稀有度、完整描述 |
+| Scene | EN | 中文 |
+|:------|:---|:-----|
+| **Combat** | Play order with numbered badges, pre-calculated damage with all modifiers, draw/discard pile awareness, cross-turn planning | 出牌顺序标注，伤害已算好全部加成，分析牌堆，跨回合规划 |
+| **Map** | All forking paths visualized, top routes ranked with priority badges, relic-aware scoring | 展示所有分叉路线，推荐最优路径，考虑遗物加成 |
+| **Card Reward** | Selection based on deck composition and archetype direction | 基于牌组构成和流派方向分析选牌 |
+| **Shop** | Purchase priority with budget and relic synergy | 购买优先级，结合预算和遗物效果 |
+| **Event** | Pros/cons for every option | 每个选项利弊分析 |
+| **Rest** | Heal vs upgrade with relic awareness | 补血/锻造决策，考虑遗物加成 |
+| **Deck** | Grouped by type, hover for full info | 按类型分组，hover显示完整信息 |
 
 ---
 
-## Prerequisites
+## Setup
 
-This overlay reads game state through a mod that exposes a localhost REST API. You need:
+### Prerequisites
 
-- **Python 3.9+**
-- **Slay the Spire 2** with the [STS2 MCP mod](https://github.com/Gennadiyev/STS2MCP) installed
-- **Claude CLI** (or another LLM CLI) for strategy analysis
+- Python 3.9+
+- Slay the Spire 2 with [STS2 MCP mod](https://github.com/Gennadiyev/STS2MCP)
+- Claude CLI (or another LLM)
 
-### Mod Installation
+### Mod Install
 
 <details>
 <summary><b>macOS</b></summary>
 
-1. Find your game install:
-   ```
-   ~/Library/Application Support/Steam/steamapps/common/Slay the Spire 2/
-   ```
-2. Right-click `SlayTheSpire2.app` > Show Package Contents
-3. Navigate to `Contents/MacOS/`
-4. Create a `mods` folder if it doesn't exist
-5. Drop `STS2_MCP.dll` and `STS2_MCP.pck` into `mods/`
-6. Launch the game — it will ask to restart in modded mode
-
-Save files are separate for modded/unmodded. To carry over progress, copy your save from the unmodded directory to the modded one before first launch.
+```
+~/Library/Application Support/Steam/steamapps/common/Slay the Spire 2/
+  → Right-click SlayTheSpire2.app → Show Package Contents
+  → Contents/MacOS/mods/
+  → Drop STS2_MCP.dll + STS2_MCP.pck
+```
 </details>
 
 <details>
 <summary><b>Windows</b></summary>
 
-1. Find your game install:
-   ```
-   Steam\steamapps\common\Slay the Spire 2\
-   ```
-2. Create a `mods` folder if it doesn't exist
-3. Drop `STS2_MCP.dll` and `STS2_MCP.pck` into `mods/`
-4. Launch the game — it will ask to restart in modded mode
-
-Save files are separate for modded/unmodded. To carry over progress, copy your save from the unmodded directory to the modded one before first launch.
+```
+Steam\steamapps\common\Slay the Spire 2\mods\
+  → Drop STS2_MCP.dll + STS2_MCP.pck
+```
 </details>
 
-### Configuration
+Modded and unmodded saves are separate. Copy saves before first modded launch if needed.
 
-Edit `config.json`:
+### Config + Launch
 
 ```json
+// config.json
 {
   "api_url": "http://localhost:15526/api/v1/singleplayer",
-  "llm_cli": "/opt/homebrew/bin/claude",
-  "poll_interval_seconds": 2.5
+  "llm_cli": "/opt/homebrew/bin/claude"
 }
 ```
-
-| Field | Description |
-|-------|-------------|
-| `api_url` | MCP mod API endpoint (default port: 15526) |
-| `llm_cli` | Path to your LLM CLI binary |
-| `poll_interval_seconds` | How often to poll game state |
-
-### Launch
 
 ```bash
 python3 -m overlay
@@ -108,207 +80,193 @@ python3 -m overlay
 
 ## Knowledge System
 
-Built on **full decompilation of the game's source code** — not wiki scraping, not guesswork. The entire game logic (card mechanics, monster AI patterns, relic interactions, power calculations) is extracted from the decompiled C# source, structured into queryable JSON databases, and fed into a multi-layered prompt system.
+Built from **full decompilation of the game source** — not wiki pages, not guesswork. The C# game logic is parsed, structured into queryable databases, and injected into a multi-layer prompt system that only sends what's relevant to each decision.
 
-知识库基于**游戏源代码的完整反编译** — 不是wiki抄录，不是猜测。所有游戏逻辑（卡牌机制、怪物AI行为、遗物交互、增减益计算）都从反编译的C#源码中提取，结构化为可查询的JSON数据库，注入多层prompt系统。
+知识库基于**游戏源代码的完整反编译** — 不是wiki抄录。C#游戏逻辑被解析、结构化为可查询数据库，通过多层prompt系统按需注入。
 
-### Data Pipeline
+### Source Extraction Pipeline
 
 ```
-Game Source (decompiled C#, 3000+ classes)
+Decompiled C# (577 cards, 260 powers, 290 relics, 88 monsters, 68 events)
         |
-        v
-  Structured Extraction
-  |-- 569 cards         full mechanics: cost, type, rarity, keywords, effects
-  |-- 289 relics        effects + scene context tags (combat/map/shop/rest/...)
-  |-- 61 potions        effects + optimal usage timing
-  |-- 111 monsters      AI behavior patterns, attack sequences, trigger conditions
-  |-- 60 powers         buff/debuff calculation rules (multiplicative/additive/flag)
+        v  automated parsing
+Structured JSON databases
+  card_tooltip_db       569 cards — cost, type, rarity, mechanics tags, full description
+                        + source field with extracted damage/block/keywords from C#
+  power_effects         60 buff/debuff — compact hybrid descriptions from source logic
+  relic_effects         289 relics — effects + scene context tags
+  potion_effects        61 potions
+  character_mechanics   per-character innate abilities (e.g. Necrobinder auto-summons Osty)
+  monster_ai            111 monster behavior patterns
+  source_extracted      raw extraction: numeric values, mechanic flags per card
         |
-        v
-  Strategy Knowledge Base
-  |-- archetype_matrix         per-character archetypes, tiered by ascension level
-  |-- card_synergy_index       112 card combo patterns with trigger conditions
-  |-- card_tier_list           card ratings contextualized per character + ascension
-  |-- boss_counter_guide       boss-specific strategies and danger thresholds
-  |-- event_guide              67 events with option analysis and edge cases
-  |-- relic_pivot_rules        relic-triggered archetype transitions
-  '-- monster_ai               attack pattern prediction for AI sequencing
+        v  context-filtered injection
+AI Prompt (only relevant slice per scene)
 ```
 
-### Multi-layer Prompt Construction
+### Multi-layer Prompt Architecture
 
-Each AI query is assembled from multiple context layers. Only relevant information is injected — the system doesn't dump everything, it queries what matters for the specific decision.
+The prompt isn't a flat text dump. It's assembled from 5 layers, each querying different knowledge bases. Only information relevant to the current decision point is injected.
 
-每次AI查询从多个上下文层组装。只注入相关信息 — 系统不会全量灌入，而是针对具体决策点查询所需内容。
+Prompt不是平铺文本。它从5层知识库按需组装，每层只注入与当前决策相关的信息。
 
-**Layer 1 — Archetype Awareness**
+**Layer 1 — Character + Archetype**
 
-The system matches the player's current relics against the archetype matrix, scores archetype viability by ascension tier, detects relic-triggered archetype pivots, and injects the top 2-3 viable archetypes with their core cards and win conditions.
+Matches player's relics against the archetype matrix. Scores viability by ascension tier. Detects relic-triggered pivots. Injects top viable archetypes with core cards and combos.
+
+匹配遗物→流派矩阵，按进阶分级评分，检测遗物触发的流派转型，注入可行流派+核心牌+combo。
 
 ```
 [亡灵契约师 A0 流派参考]
   灵魂虚无流(S) 核心牌:虚空之唤、灰烬之灵、纠缠
-    combo: 虚空之唤→每回合塞虚无牌+书页风暴/亡魂牵引消耗获取价值
-  灾厄流(A) 核心牌:瘟疫、腐蚀之触、死亡之门
-    遗物协同: 松动羊毛剪(削弱灾厄牌的虚无副作用)
+    combo: 虚空之唤→每回合塞虚无牌+书页风暴消耗获取价值
+  灾厄流(A) 核心牌:瘟疫、死亡之门
+角色机制：每场自动带奥斯提(独立友方)。为你而死:重定向未格挡攻击→奥斯提(per hit)
 ```
 
-**Layer 2 — Battlefield State Processing**
+**Layer 2 — Pre-calculated Combat State**
 
-Every number the AI sees is pre-calculated. Strength, weakness, vulnerability, dexterity — all applied before the prompt is built. The AI doesn't need to do math.
+Every number the AI sees is already computed. Strength, weakness, vulnerability applied to both hand cards and enemy intents. No math required from the LLM.
 
-```
-Hand (all modifiers applied):
-  [0] 出击  cost:1  base 8 → actual 6 dmg  (weakness: ×0.75)
-  [3] 护卫  cost:1  [技能 基础] 召唤奥斯提（5HP）
-
-Enemy (strength applied to attack intent):
-  蜈蚣#2  HP:26/26  intent: 攻击 3×2 → actual 7×2=14 dmg  (str 4)
-  status: 饥饿×4
-```
-
-**Layer 3 — Effect Semantics**
-
-Raw buff names are meaningless to an LLM. The system looks up every active power, relic, and potion from the effects database and injects human-readable explanations of what they actually do in combat.
+AI看到的每个数值都已预算完毕。力量/虚弱/易伤已应用到手牌和敌人意图。LLM不需要做数学。
 
 ```
-Battlefield effects:
-  虚弱(1): 攻击伤害×0.75
-  饥饿(4): 同伴死亡时获得力量但被击晕一回合（跳过攻击）
-  为你而死: 主人受到未格挡伤害时此召唤物替主人承受，永久能力，可复活
+Hand:
+  [0]✓ 抓取 1费 7伤 [保留/Osty攻击] [攻击] 奥斯提造成7点伤害 →实际5伤
+  [2]✓ 防御 1费 5挡 [技能] 获得5点格挡 →实际5挡
 
-Relic combat effects:
-  赤牛: 每场战斗开始时获得活力（首次攻击额外伤害）
-  松动羊毛剪: 每回合开始时移除手牌中1张状态/诅咒牌
+Enemy:
+  蜈蚣#2  攻击 3×2 →实际7×2=14伤  (str 4 applied)
+```
+
+**Layer 3 — Effect Semantics (from source code)**
+
+Every active buff/debuff is looked up in the power effects database (built from decompiled C#) and explained in compact hybrid format. The AI knows exactly what each effect does mechanically, not just its name.
+
+每个活跃buff/debuff从源码提取的效果数据库中查询，用紧凑hybrid格式解释。AI知道每个效果的精确机制。
+
+```
+力量(4): 攻击牌+N伤
+饥饿(4): 同伴死→+力量+击晕1回合
+为你而死: 重定向未格挡攻击→自身(per hit)。死后停止但可复活。多段攻击只挡当前hit
 ```
 
 **Layer 4 — Tactical Computation**
 
-Lethal detection, kill estimation, shuffle prediction, draw pile probability — all computed before the LLM sees anything.
+Lethal check, kill estimation, shuffle prediction, draw pile contents — all computed before the prompt is built.
+
+致命检测、击杀预估、洗牌预判、牌堆内容 — 全部在prompt构建前计算完毕。
 
 ```
-Tactical:
-  危险：敌人总伤14，需格挡8点（否则掉到49HP）
-  预估3回合击杀（本回合输出≈13，敌人剩26HP）
-  摸牌堆仅3张，下回合将洗牌（弃牌堆5张回来）
-
-Draw pile: 防御 打击 出击
-Discard pile: 防御×2 护卫 打击
+危险：敌人总伤14，需格挡8点
+预估3回合击杀（本回合≈13，敌人剩26HP）
+摸牌堆(3张): 防御 打击 出击
 ```
 
-**Layer 5 — Scene-specific Context Filtering**
+**Layer 5 — Scene-filtered Knowledge**
 
-Each scene type gets a different slice of the knowledge base. The system doesn't dump everything — it queries what's relevant.
+Relics, potions, and character mechanics are tagged with context labels. Each scene type gets only its relevant slice.
 
-每个场景类型获取不同的知识切片。系统不会全量灌入，而是按场景查询相关内容。
+遗物、药水、角色机制按场景标签过滤。每个场景只获取相关切片。
 
-| Scene | What gets injected |
-|-------|-------------------|
-| **Combat** | Active buffs/debuffs explained, relic combat effects, pre-calculated damage for hand + enemies, draw/discard pile contents, lethal detection, kill estimation, shuffle prediction |
-| **Map** | Healing relics (e.g. Burning Blood: +6 HP per fight), elite incentive relics (e.g. Black Star: double elite relic drops), shop/rest/event relics, gold earning relics |
-| **Card Reward** | Full deck composition, archetype direction, card synergy index lookup, tier rating for current character + ascension |
-| **Shop** | Budget analysis, shop discount relics (e.g. Membership Card: 50% off), current deck gaps |
-| **Rest** | Rest-specific relics (e.g. Dream Catcher: pick a card when resting, Peace Pipe: remove a card), HP percentage calculation, upgrade value analysis |
-| **Event** | Event guide lookup from 67 pre-analyzed events, option-by-option risk/reward with edge cases |
+| Scene | Injected context |
+|-------|-----------------|
+| Combat | Active buffs explained, relic combat effects, pre-calc damage, draw/discard pile, lethal/kill/shuffle |
+| Map | Healing/elite/shop/rest/gold relic bonuses |
+| Card Reward | Full deck list, archetype direction, character mechanics |
+| Shop | Budget, discount relics, deck gaps |
+| Rest | Rest-specific relics, HP%, upgrade value |
+| Event | 67 pre-analyzed events, option-by-option risk/reward |
 
-All of this is **data-driven**. Adding a new card, power, or relic means editing a JSON file. No code changes.
-
-全部**数据驱动**。添加新卡牌、效果或遗物只需编辑JSON文件，不改代码。
-
----
-
-## Architecture
-
-Layered building-block design. Bottom layers are reused by everything above.
-
-```
-  JSON Data               Edit to extend, no code changes
-  Utilities               _get_power_amount / _has_power / _pile_summary
-  Knowledge Lookup        _explain_powers / _explain_relics / _explain_potions
-  Render Blocks           _render_card -> _render_card_grid -> _render_grouped_cards
-  Scene Renderers         _display_combat / _display_map / _display_shop ...
-  AI Analysis             _ai_combat / _ai_map / _ai_card / _ai_node
-  Commander               State polling -> scene routing -> UI bridge
-```
-
-Design principles:
-- **Single source of truth** — one `_render_card` for all card displays, one `_render_entity_block` for all entities
-- **Data-driven** — buff/relic/potion effects live in JSON, AI queries what's relevant per scene
-- **Zero duplication** — change one method, every scene updates automatically
+Everything is **data-driven**. New cards, powers, relics = edit JSON. Zero code changes.
 
 ---
 
 ## Project Structure
 
 ```
-overlay/                    Core (11 modules, ~5000 lines)
-  commander.py                Controller: polling, scene routing
-  display.py                  Rendering: all UI building blocks
-  ai_advisor.py               AI: strategy analysis, prompt construction
-  data.py                     Data: saves, deck tracking
-  history.py                  History: combat log, post-run review
-  card_db.py                  Card database (single source, 569 cards)
-  knowledge_db.py             Knowledge base loader
+overlay/                    Core (11 modules)
+  commander.py                Controller — polling, scene routing, UI bridge
+  display.py                  Rendering — atomic building blocks, layered composition
+  ai_advisor.py               AI — multi-layer prompt construction, knowledge injection
+  data.py                     Data — saves, deck tracking, card collection
+  history.py                  History — combat log, post-run review
+  card_db.py                  Card DB — single source (569 cards from decompiled source)
+  knowledge_db.py             Strategy KB loader
   llm_client.py               LLM interface
   constants.py                Constants, paths
   ui.html                     Frontend (pywebview)
 
 data/                       Game data (extracted from source)
-  cards/                      Card info (569 entries)
-  relics/                     Relics (289), Potions (61)
-  meta/                       Progress data
+  cards/                      569 cards with source-extracted fields
+  relics/                     289 relics, 61 potions
+  meta/                       Progress
 
-knowledge/                  Strategy knowledge base
-  power_effects.json            60 buff/debuff mechanics
-  relic_effects.json            289 relic effects with context tags
-  potion_effects.json           61 potion effects
-  archetype_matrix.json         Archetype strategies
+knowledge/                  Strategy + effects (all JSON, data-driven)
+  source_extracted.json         Raw C# extraction (554 cards, 260 powers, 290 relics)
+  power_effects.json            60 buff/debuff — compact hybrid from source
+  relic_effects.json            289 relics — effects + scene context tags
+  potion_effects.json           61 potions
+  character_mechanics.json      Per-character innate abilities
+  archetype_matrix.json         Archetype strategies per character
   monster_ai.json               111 monster behavior patterns
   event_guide.json              67 event analyses
-  boss_counter_guide.json       Boss counter strategies
+  boss_counter_guide.json       Boss strategies
   card_tier_list.json           Card ratings
-  card_synergy_index.json       112 card combo patterns
+  card_synergy_index.json       112 card combos
 
 tests/reference/            UI reference HTML (11 scenes)
 ```
+
+### Layered Rendering Architecture
+
+```
+JSON Data           → edit to extend
+Utilities           → _get_power_amount / _has_power / _pile_summary
+Knowledge Lookup    → _explain_powers / _explain_relics / _explain_potions / _get_char_mechanic
+Card Prompt         → _card_prompt_line (unified: combat + reward + shop)
+Render Blocks       → _render_card → _render_card_grid → _render_grouped_cards
+Scene Renderers     → _display_combat / _display_map / _display_shop ...
+AI Analysis         → _ai_combat / _ai_map / _ai_card / _ai_node
+Commander           → State polling → scene routing → UI bridge
+```
+
+Single `_render_card` for all card displays. Single `_card_prompt_line` for all AI prompts. Single `_render_entity_block` for all entities. Change one method, every scene updates.
 
 ---
 
 ## Extending
 
 <details>
-<summary><b>Add a new card</b></summary>
+<summary><b>Add a card</b></summary>
 
-Edit `data/cards/card_tooltip_db.json`:
-
+`data/cards/card_tooltip_db.json`:
 ```json
-"CardName": {
-  "id": "CardId", "name_cn": "CardName",
-  "cost": 1, "type": "attack", "rarity": "common",
-  "keywords": "", "desc_cn": "Deal 10 damage."
-}
+"CardName": {"id":"Id","name_cn":"CardName","cost":1,"type":"attack","rarity":"common","desc_cn":"Deal 10 damage."}
 ```
 </details>
 
 <details>
-<summary><b>Add a new buff/debuff</b></summary>
+<summary><b>Add a buff/debuff</b></summary>
 
-Edit `knowledge/power_effects.json`:
-
+`knowledge/power_effects.json`:
 ```json
-"PowerId": {
-  "name_cn": "PowerName", "type": "buff",
-  "effect": "Gain 1 strength per turn"
-}
+"PowerId": {"name_cn":"Name","type":"buff","effect":"攻击牌+N伤"}
 ```
 </details>
 
 <details>
-<summary><b>Add a relic effect</b></summary>
+<summary><b>Add a relic</b></summary>
 
-Edit `knowledge/relic_effects.json` with context tags:
-
+`knowledge/relic_effects.json` — set `context` tags:
 `combat` / `map_heal` / `map_elite` / `map_shop` / `map_rest` / `potion` / `card_reward`
 </details>
 
+<details>
+<summary><b>Add a character</b></summary>
+
+`knowledge/character_mechanics.json`:
+```json
+"CharName": {"innate":"...","resources":"...","note":"..."}
+```
+</details>
