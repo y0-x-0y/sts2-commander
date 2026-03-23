@@ -32,57 +32,71 @@
 
 ## Setup
 
-### Prerequisites
+### Step 1 — Install the game mod
 
-- Python 3.9+
-- Slay the Spire 2 with [STS2 MCP mod](https://github.com/Gennadiyev/STS2MCP)
-- Claude CLI (or another LLM)
-
-### Mod Install
+The overlay reads game state through a mod that runs a local API server. Download the mod files from [STS2 MCP](https://github.com/Gennadiyev/STS2MCP).
 
 <details>
 <summary><b>macOS</b></summary>
 
-```
-~/Library/Application Support/Steam/steamapps/common/Slay the Spire 2/
-  → Right-click SlayTheSpire2.app → Show Package Contents
-  → Contents/MacOS/mods/
-  → Drop STS2_MCP.dll + STS2_MCP.pck
-```
+1. Open Steam, right-click **Slay the Spire 2** → Manage → Browse Local Files
+2. Right-click `SlayTheSpire2.app` → Show Package Contents
+3. Navigate to `Contents/MacOS/`
+4. Create a folder called `mods` if it doesn't exist
+5. Drop `STS2_MCP.dll` and `STS2_MCP.pck` into the `mods` folder
+6. Launch the game — it will detect the mod and ask to restart in modded mode
 </details>
 
 <details>
 <summary><b>Windows</b></summary>
 
-```
-Steam\steamapps\common\Slay the Spire 2\mods\
-  → Drop STS2_MCP.dll + STS2_MCP.pck
-```
+1. Open Steam, right-click **Slay the Spire 2** → Manage → Browse Local Files
+2. Create a folder called `mods` if it doesn't exist
+3. Drop `STS2_MCP.dll` and `STS2_MCP.pck` into the `mods` folder
+4. Launch the game — it will detect the mod and ask to restart in modded mode
 </details>
 
-Modded and unmodded saves are separate. Copy saves before first modded launch if needed.
+> Modded and unmodded use separate save files. If you want to carry over your progress, copy your save folder before the first modded launch.
 
-### Config + Launch
+### Step 2 — Connect an LLM
 
-Two LLM backends supported: CLI mode or API mode.
+The overlay uses a large language model for strategy analysis. Two connection methods are supported.
 
 <details>
-<summary><b>CLI mode (Claude CLI)</b></summary>
+<summary><b>Option A — Claude CLI (recommended)</b></summary>
+
+1. Install [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)
+2. Verify it works: `claude --help`
+3. Edit `config.json`:
 
 ```json
-// config.json
 {
   "api_url": "http://localhost:15526/api/v1/singleplayer",
-  "llm_cli": "/opt/homebrew/bin/claude"
+  "llm_cli": "claude"
 }
 ```
+
+The CLI path is usually just `claude` if installed globally. If you installed it elsewhere, use the full path (e.g. `/usr/local/bin/claude`).
 </details>
 
 <details>
-<summary><b>API mode (OpenAI / Anthropic / compatible)</b></summary>
+<summary><b>Option B — API key (Anthropic / OpenAI / any compatible provider)</b></summary>
+
+1. Get an API key from your provider ([Anthropic](https://console.anthropic.com/), [OpenAI](https://platform.openai.com/), etc.)
+
+2. Set the key as an environment variable (the key is never stored in any project file):
+
+```bash
+# macOS / Linux — add to ~/.zshrc or ~/.bashrc
+export LLM_API_KEY="your-api-key-here"
+
+# Windows — run in PowerShell
+$env:LLM_API_KEY="your-api-key-here"
+```
+
+3. Edit `config.json` with your provider's endpoint:
 
 ```json
-// config.json
 {
   "api_url": "http://localhost:15526/api/v1/singleplayer",
   "llm_api_base": "https://api.anthropic.com/v1",
@@ -90,15 +104,25 @@ Two LLM backends supported: CLI mode or API mode.
 }
 ```
 
-Set your API key as environment variable (never stored in config):
-```bash
-export LLM_API_KEY="sk-..."
-```
+Other providers — just change the base URL and model name:
+
+| Provider | `llm_api_base` | `llm_model` |
+|----------|---------------|-------------|
+| Anthropic | `https://api.anthropic.com/v1` | `claude-sonnet-4-20250514` |
+| OpenAI | `https://api.openai.com/v1` | `gpt-4o` |
+| Local (Ollama) | `http://localhost:11434/v1` | `llama3` |
+| Any OpenAI-compatible | your endpoint | your model |
+
 </details>
 
+### Step 3 — Launch
+
 ```bash
+# Make sure the game is running with the mod active
 python3 -m overlay
 ```
+
+The overlay window will appear and automatically connect to the game.
 
 ---
 
