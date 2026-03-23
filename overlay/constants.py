@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-STS2 常量与配置 — 从 commander.py 提取的所有顶层定义
+STS2 常量与配置 — 从 ai_advisor_app.py 提取的所有顶层定义
 """
 
 import os

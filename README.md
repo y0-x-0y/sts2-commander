@@ -1,5 +1,5 @@
 <h1 align="center">
-  STS2 Commander
+  STS2 AI Advisor
   <br>
   <sub>Slay the Spire 2 — Real-time Strategy Overlay</sub>
 </h1>
@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  杀戮尖塔2 实时策略指挥官 — 通过 MCP API 读取游戏状态，覆盖全场景的策略分析浮窗。
+  杀戮尖塔2 实时AI策略顾问 — 通过 MCP API 读取游戏状态，覆盖全场景的策略分析浮窗。
 </p>
 
 ---
@@ -234,7 +234,7 @@ Everything is **data-driven**. New cards, powers, relics = edit JSON. Zero code 
 
 ```
 overlay/                    Core (11 modules)
-  commander.py                Controller — polling, scene routing, UI bridge
+  ai_advisor_app.py           Controller — polling, scene routing, UI bridge
   display.py                  Rendering — atomic building blocks, layered composition
   ai_advisor.py               AI — multi-layer prompt construction, knowledge injection
   data.py                     Data — saves, deck tracking, card collection
@@ -276,7 +276,7 @@ Card Prompt         → _card_prompt_line (unified: combat + reward + shop)
 Render Blocks       → _render_card → _render_card_grid → _render_grouped_cards
 Scene Renderers     → _display_combat / _display_map / _display_shop ...
 AI Analysis         → _ai_combat / _ai_map / _ai_card / _ai_node
-Commander           → State polling → scene routing → UI bridge
+AI Advisor          → State polling → scene routing → UI bridge
 ```
 
 Single `_render_card` for all card displays. Single `_card_prompt_line` for all AI prompts. Single `_render_entity_block` for all entities. Change one method, every scene updates.

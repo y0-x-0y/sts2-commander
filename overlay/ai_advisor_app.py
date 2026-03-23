@@ -48,8 +48,8 @@ DEBUFF_CLR = "#d47a30"
 class BridgeAPI:
     """JS -> Python bridge for pywebview."""
 
-    def __init__(self, commander):
-        self._cmd = commander
+    def __init__(self, advisor):
+        self._cmd = advisor
 
     def onAnalyze(self, analysis_type):
         if analysis_type == "situation":
@@ -64,7 +64,9 @@ class BridgeAPI:
             threading.Thread(target=self._cmd._do_freeform_ask, args=(text,), daemon=True).start()
 
 
-class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
+class STS2AIAdvisor(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
+
+    _ACTIVE_SCENES = ("rest", "rest_site", "event", "shop")
 
     def __init__(self):
         # State
@@ -219,6 +221,7 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
             self._busy_strat  = False
             self._busy_combat = False
             self._busy_deck   = False
+            self._map_stable_count = 0
             self._js('app.setButtonState("btn-situation", "◆  求策·当前形势  ◆", false)')
             self._js('app.setButtonState("btn-deck", "◆  求策·卡组  ◆", false)')
             self._clear_advice()
@@ -251,9 +254,8 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
             # Only render map when there are actual route choices (not just viewing map)
             mdata = state.get("map", {})
             has_choices = bool(mdata.get("next_options"))
-            active_scenes = ("rest", "rest_site", "event", "shop")
             if type_changed and has_choices:
-                if self.last_type in active_scenes:
+                if self.last_type in self._ACTIVE_SCENES:
                     # Might be map-view — wait for stable map state before rendering
                     self._map_stable_count = 1
                 else:
@@ -278,7 +280,6 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
                 self._js('app.setTab("situation")')
 
         elif stype == "event":
-            self._map_stable_count = 0
             if type_changed:
                 # Store event context for subsequent card_select
                 ev = state.get("event", {})
@@ -289,12 +290,10 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
                 self._display_event(state)
 
         elif stype == "shop":
-            self._map_stable_count = 0
             if type_changed:
                 self._display_shop(state)
 
         elif stype in ("rest", "rest_site"):
-            self._map_stable_count = 0
             if type_changed:
                 self._display_rest(state)
 
@@ -463,5 +462,5 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
 
 
 if __name__ == "__main__":
-    app = STS2Commander()
+    app = STS2AIAdvisor()
     app.run()
