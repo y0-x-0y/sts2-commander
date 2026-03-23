@@ -239,7 +239,10 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
                 threading.Timer(1.5, self._delayed_display_combat).start()
 
         elif stype == "map":
-            if type_changed:
+            # Only render map when there are actual route choices (not just viewing map)
+            mdata = state.get("map", {})
+            has_choices = bool(mdata.get("next_options"))
+            if type_changed and has_choices:
                 self._display_map(state)
 
         elif stype in ("card_reward", "card_select"):
