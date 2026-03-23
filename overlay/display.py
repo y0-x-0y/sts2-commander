@@ -807,6 +807,7 @@ class DisplayMixin:
                 parts.append(self._render_grouped_cards(rewards))
             else:
                 parts.append(self._render_card_grid(rewards))
+                parts.append('<div class="textbox"><span class="dim">也可以跳过不选牌</span></div>')
         else:
             parts.append('<div class="textbox"><span class="dim">（无可选牌，可跳过）</span></div>')
 
@@ -870,67 +871,63 @@ class DisplayMixin:
                               "is_stocked": True, "relic_description": r.get("description", "")})
             for p in shop.get("potions", []):
                 items.append({"category": "potion", "potion_name": p.get("name"), "cost": p.get("price"),
-                              "is_stocked": True})
+                              "is_stocked": True, "potion_description": p.get("description", "")})
 
         cards = [i for i in items if i.get("category") == "card" and i.get("is_stocked")]
         relics = [i for i in items if i.get("category") == "relic" and i.get("is_stocked")]
         potions = [i for i in items if i.get("category") == "potion" and i.get("is_stocked")]
-        purge = [i for i in items if i.get("category") in ("purge", "card_removal") and i.get("is_stocked")]
 
         parts = []
         parts.append(f'<span class="gold" style="font-weight:600">商店</span>')
         parts.append(f'  <span class="dim">金币: </span>')
-        parts.append(f'<span style="font-weight:600">{html.escape(str(gold))}</span><br><br>')
+        parts.append(f'<span style="font-weight:600">{html.escape(str(gold))}</span>')
 
-        # Card name color by rarity — matches in-game border colors
         def _shop_price(c):
-            price_str = f"{c.get('cost', '?')}金"
+            price_str = f"{c.get('gold_price', '?')}金"
             if c.get("on_sale"):
                 price_str += " 折扣"
-            if not c.get("can_afford", True):
-                price_str += " 买不起"
             return price_str
 
         if cards:
-            parts.append('<div class="section-title">卡牌</div>')
-            # Normalize shop card dicts so _render_card can read them
+            parts.append('<div class="section-title">商店卡牌</div>')
             normalized = []
             for c in cards:
                 nc = dict(c)
                 nc["name"] = c.get("card_name", c.get("name", "?"))
                 nc["description"] = self._clean_desc(c.get("card_description", ""))
+                nc["gold_price"] = nc.pop("cost", "?")  # separate gold price from energy cost
                 normalized.append(nc)
-            parts.append(self._render_grouped_cards(normalized, price_fn=_shop_price))
+            parts.append(self._render_card_grid(normalized, show_type=True, price_fn=_shop_price))
 
-        if relics:
-            parts.append('<div class="section-title">遗物</div>')
-            parts.append('<div class="textbox">')
+        if relics or potions:
+            parts.append('<div class="section-title">遗物 & 药水</div>')
+            parts.append('<div class="card-grid">')
             for r in relics:
                 rname = _cn_relic(r.get('relic_name', '?'))
                 rcost = r.get('cost', '?')
-                rdesc = r.get('relic_description', '')
-                parts.append(f'<span class="highlight">{html.escape(rname)}</span> ')
-                parts.append(f'<span class="gold">{rcost}金</span>')
-                if not r.get("can_afford", True):
-                    parts.append(f'  <span class="debuff">买不起</span>')
-                if rdesc:
-                    parts.append(f'<br><span class="dim">  {html.escape(self._clean_desc(rdesc)[:40])}</span>')
-                parts.append('<br>')
-            parts.append('</div>')
-
-        if potions:
-            parts.append('<div class="section-title">药水</div>')
-            parts.append('<div class="textbox">')
+                rdesc = self._clean_desc(r.get('relic_description', ''))
+                tooltip = f'<div class="card-tooltip"><span class="ct-desc">{html.escape(rdesc)}</span></div>' if rdesc else ""
+                parts.append(
+                    f'<div class="card-item">'
+                    f'<span class="card-name" style="color:var(--accent2)">{html.escape(rname)}</span>'
+                    f' <span class="card-cost" style="color:var(--accent)">遗物</span>'
+                    f'<div class="card-price">{rcost}金</div>'
+                    f'{tooltip}'
+                    f'</div>')
             for p in potions:
                 pname = _cn_potion(p.get('potion_name', '?'))
                 pcost = p.get('cost', '?')
-                parts.append(f'<span class="blue">{html.escape(pname)}</span> ')
-                parts.append(f'<span class="gold">{pcost}金</span><br>')
+                pdesc = self._clean_desc(
+                    p.get('potion_description', '') or p.get('description', ''))
+                tooltip = f'<div class="card-tooltip"><span class="ct-desc">{html.escape(pdesc)}</span></div>' if pdesc else ""
+                parts.append(
+                    f'<div class="card-item">'
+                    f'<span class="card-name" style="color:var(--buff)">{html.escape(pname)}</span>'
+                    f' <span class="card-cost" style="color:var(--buff)">药水</span>'
+                    f'<div class="card-price">{pcost}金</div>'
+                    f'{tooltip}'
+                    f'</div>')
             parts.append('</div>')
-
-        if purge:
-            parts.append(f'<div class="section-title">删牌服务</div>')
-            parts.append(f'<div class="textbox"><span class="debuff">{purge[0].get("cost", "?")}金</span></div>')
 
         self._push_scene(parts)
 

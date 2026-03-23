@@ -1063,10 +1063,12 @@ class AIAdvisorMixin:
 - 必须结合当前牌组构成和流派方向来选牌，不只看单张牌强度，要看它和现有牌组的配合。
 - 仔细阅读上方牌组列表，确认牌组中已有哪些牌。
 - 阅读每张奖励牌的完整描述来判断，不要凭牌名猜测效果。
+- 可以跳过不选牌。如果所有奖励牌都不适合当前构建，建议跳过。
 格式（每行一条，不要多余解释）：
 ★ 牌名 — 理由（结合流派和牌组构成分析，为什么这张最适合当前构建）
 ○ 牌名 — 理由（可以考虑的备选）
 ✗ 牌名 — 理由（为什么不适合当前构建）
+如果都不值得选，输出：⊘ 建议跳过 — 理由
 方向：一句话当前流派+缺什么"""
 
             advice = self.llm.ask(prompt)
@@ -1093,6 +1095,7 @@ class AIAdvisorMixin:
     def _ai_node(self, state):
         self._busy_strat = True
         stype = state.get("state_type", "")
+        print(f"[AI Node] analyzing {stype}", flush=True)
         self._show_analyzing("◌  正在分析…")
         try:
             # 重新抓最新状态确保数据完整
@@ -1168,20 +1171,30 @@ class AIAdvisorMixin:
                     elif cat == "purge":
                         items.append(f"  删牌服务（{cost}金）")
                 items_str = chr(10).join(items) or '（无物品）'
-                prompt = f"""杀戮尖塔2商店建议，纯文字不用markdown。所有牌名遗物名用中文。
+                deck_info = f"已选牌：{', '.join(self.deck_acquired)}" if self.deck_acquired else "初始牌组"
+                removed = f"已移除：{', '.join(self.deck_removed)}" if self.deck_removed else ""
+                arch_hint = f"流派方向：{self._deck_archetype}" if self._deck_archetype else ""
 
-金币：{player.get('gold')}  HP：{player.get('hp')}/{player.get('max_hp')}（{hp_pct}%）  幕{run.get('act')}
-{'已选牌：'+', '.join(self.deck_acquired) if self.deck_acquired else '初始牌组'}
+                prompt = f"""杀戮尖塔2商店购买建议。纯文字，不用markdown。所有牌名遗物名用中文。极简输出。
+
+金币：{player.get('gold')}  HP：{player.get('hp')}/{player.get('max_hp')}（{hp_pct}%）  幕{run.get('act')}·层{run.get('floor')}
+遗物：{relics}
+{deck_info}
+{removed}
+{arch_hint}
 
 商店物品：
 {items_str}
 {"商店相关遗物效果：" + chr(10) + relic_info if relic_info else ""}
 
-给出建议：优先买什么，哪些不值得。格式：
-推荐购买：（列出物品及理由）
-可以考虑：（性价比分析）
-跳过：（不值得的原因）
-删牌建议：（如果有删牌服务）"""
+重要：
+- 结合当前牌组构成、流派方向和金币预算来决定买什么。
+- 商店有删牌服务，考虑是否需要删牌来精简牌组。
+格式（每行一条，按优先级排序，不要多余解释）：
+★ 物品名 — 理由（为什么值得买，和当前构建的配合）
+○ 物品名 — 理由（可以考虑，性价比分析）
+✗ 物品名 — 理由（为什么不值得）
+💡 购买策略 — 综合金币预算和后续需求给出购买顺序建议"""
                 advice = self.llm.ask(prompt)
                 if not self._analysis_stale():
                     self._push_advice(advice)
@@ -1195,6 +1208,7 @@ class AIAdvisorMixin:
                 self._push_advice(advice)
                 self._js('app.setTab("situation")')
         except Exception as e:
+            print(f"[AI Node] error: {e}", flush=True)
             if not self._analysis_stale():
                 self._js(f'app.updateAdvice({json.dumps(_html.escape(f"⚠ {e}"))})')
         finally:

@@ -90,6 +90,7 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
         self._first_connect      = True
         self._card_analyzed      = False
         self._deck_analysis_text = ""
+        self._map_stable_count   = 0         # consecutive "map" polls from active scene
         self._window = None
         self._window_ready = threading.Event()
 
@@ -191,6 +192,14 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
         run = state.get("run", {})
 
         if player:
+            # API doesn't return relics — read from save file on state changes
+            if not player.get("relics"):
+                if stype != self.last_type or not self.last_player.get("relics"):
+                    save_relics = self._get_relics_from_save()
+                    if save_relics:
+                        player["relics"] = save_relics
+                else:
+                    player["relics"] = self.last_player["relics"]
             self.last_player = player
         elif not self.last_player:
             save_player, _ = self._load_save_data()
@@ -242,8 +251,20 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
             # Only render map when there are actual route choices (not just viewing map)
             mdata = state.get("map", {})
             has_choices = bool(mdata.get("next_options"))
+            active_scenes = ("rest", "rest_site", "event", "shop")
             if type_changed and has_choices:
-                self._display_map(state)
+                if self.last_type in active_scenes:
+                    # Might be map-view — wait for stable map state before rendering
+                    self._map_stable_count = 1
+                else:
+                    self._map_stable_count = 0
+                    self._display_map(state)
+            elif not type_changed and self._map_stable_count > 0:
+                self._map_stable_count += 1
+                if self._map_stable_count >= 3 and has_choices:
+                    # Map state held for 3+ polls (~2.4s) — real map transition
+                    self._display_map(state)
+                    self._map_stable_count = 0
 
         elif stype in ("card_reward", "card_select"):
             if type_changed:
@@ -257,6 +278,7 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
                 self._js('app.setTab("situation")')
 
         elif stype == "event":
+            self._map_stable_count = 0
             if type_changed:
                 # Store event context for subsequent card_select
                 ev = state.get("event", {})
@@ -267,10 +289,12 @@ class STS2Commander(DisplayMixin, AIAdvisorMixin, HistoryMixin, DataMixin):
                 self._display_event(state)
 
         elif stype == "shop":
+            self._map_stable_count = 0
             if type_changed:
                 self._display_shop(state)
 
         elif stype in ("rest", "rest_site"):
+            self._map_stable_count = 0
             if type_changed:
                 self._display_rest(state)
 
