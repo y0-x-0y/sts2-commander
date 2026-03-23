@@ -925,62 +925,42 @@ class DisplayMixin:
         self._push_scene(parts)
 
     def _display_rest(self, state):
-        """Auto-display rest site options (no LLM)."""
+        """Auto-display rest site options — uses option-block (same as events)."""
         rest   = state.get("rest_site", state.get("rest", {}))
-        player = self._get_player(state)
-
-        hp  = player.get("hp", 0)
-        mhp = player.get("max_hp", 1)
-        hp_pct = int(hp / mhp * 100)
+        player = self._get_player(state) or self.last_player or {}
+        mhp = max(player.get("max_hp", 1), 1)
         heal_amt = int(mhp * 0.35)
 
-        parts = []
-        parts.append(f'<div class="section-title">休息点</div>')
-        parts.append(f'<div class="textbox">')
-        parts.append(f'<span class="dim">HP: </span><span class="warn">{hp}/{mhp}</span>')
-        parts.append(f' <span class="dim">({hp_pct}%)</span><br><br>')
+        parts = [f'<div class="section-title">休息点</div>']
 
         opts = rest.get("options", [])
-        if opts:
-            for oi, o in enumerate(opts):
-                # Try multiple field names the API might use
-                key = o.get("type") or o.get("id") or o.get("action") or o.get("label") or "?"
-                key_lower = key.lower().replace("_", "")
+        if not opts:
+            # Fallback: default rest options
+            opts = [{"type": "rest"}, {"type": "smith"}]
 
-                # Match against known rest options
-                label_pair = self._REST_LABELS.get(key)
-                if not label_pair:
-                    # Try fuzzy match
-                    for rk, rv in self._REST_LABELS.items():
-                        if rk in key_lower:
-                            label_pair = rv
-                            key = rk
-                            break
+        for oi, o in enumerate(opts):
+            key = o.get("type") or o.get("id") or o.get("action") or o.get("label") or "?"
+            # Fuzzy match to known labels
+            label_pair = self._REST_LABELS.get(key)
+            if not label_pair:
+                for rk, rv in self._REST_LABELS.items():
+                    if rk in key.lower():
+                        label_pair = rv
+                        key = rk
+                        break
 
-                if label_pair:
-                    title, desc = label_pair
-                    if key == "rest":
-                        desc = f"回复35%最大HP（约+{heal_amt} HP）"
-                else:
-                    # Fallback: show whatever the API gives us
-                    title = o.get("label") or o.get("name") or o.get("title") or key
-                    desc = o.get("description", "")
+            if label_pair:
+                title, desc = label_pair
+                if key == "rest":
+                    desc = f"回复35%最大HP（约+{heal_amt} HP）"
+            else:
+                title = o.get("label") or o.get("name") or o.get("title") or key
+                desc = o.get("description", "")
 
-                parts.append(f'<span style="font-weight:600">选项 {oi + 1}: </span>')
-                parts.append(f'<span class="highlight">{html.escape(str(title))}</span><br>')
-                if desc:
-                    parts.append(f'  <span class="dim">{self._colorize_desc(str(desc))}</span><br>')
-                parts.append('<br>')
-        else:
-            rest_title, rest_desc = self._REST_LABELS["rest"]
-            smith_title, smith_desc = self._REST_LABELS["smith"]
-            parts.append(f'<span style="font-weight:600">选项 1: </span>')
-            parts.append(f'<span class="highlight">{rest_title}</span><br>')
-            parts.append(f'  <span class="dim">回复35%最大HP（约+{heal_amt} HP）</span><br><br>')
-            parts.append(f'<span style="font-weight:600">选项 2: </span>')
-            parts.append(f'<span class="highlight">{smith_title}</span><br>')
-            parts.append(f'  <span class="dim">{html.escape(smith_desc)}</span><br>')
-
-        parts.append('</div>')
+            parts.append('<div class="option-block">')
+            parts.append(f'<div class="option-label">选项 {oi + 1}: {html.escape(str(title))}</div>')
+            if desc:
+                parts.append(f'<div class="option-desc">{self._colorize_desc(str(desc))}</div>')
+            parts.append('</div>')
 
         self._push_scene(parts)
