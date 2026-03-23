@@ -98,7 +98,8 @@ class AIAdvisorMixin:
         return " ".join(parts)
 
     def _card_prompt_line(self, c):
-        """Build a compact card description for AI prompts. Used by card_reward, combat hand, shop."""
+        """Build a compact card description for AI prompts. Used by card_reward, combat hand, shop.
+        Format: name cost费 [type] [mechanics] desc"""
         name = c.get('name', '?')
         upg = '+' if c.get('is_upgraded') else ''
         cost = c.get('cost', '?')
@@ -108,22 +109,21 @@ class AIAdvisorMixin:
             detail = self.cards.detail(name)
             if detail:
                 if cost == '?': cost = detail.get('cost', '?')
-                # Source-extracted compact desc (most accurate, fewest tokens)
-                source = detail.get('source', '')
-                desc_cn = detail.get('desc_cn', '')
                 ctype = detail.get('type', '')
-                rarity = detail.get('rarity', '')
                 mechanics = detail.get('mechanics', [])
+                desc_cn = detail.get('desc_cn', '')
 
-                if source:
-                    parts.append(source)
-                else:
-                    parts.append(f"{cost}费")
-
+                parts.append(f"{cost}费")
                 if ctype:
                     parts.append(f"[{ctype}]")
-
-                # Full description for context
+                # Mechanics tags from source code (reliable)
+                _MECH_CN = {'exhaust':'消耗','ethereal':'虚无','retain':'保留','innate':'固有',
+                            'osty_attack':'Osty攻击','calamity':'灾厄','soul':'灵魂','aoe':'AOE',
+                            'summon_osty':'召唤Osty','scry':'预见','channel_orb':'充能球',
+                            'repeatable':'可重复','draw':'抽牌'}
+                mech_tags = [_MECH_CN.get(m, m) for m in mechanics if m not in ('block','draw')]
+                if mech_tags:
+                    parts.append(f"[{'/'.join(mech_tags)}]")
                 if desc_cn:
                     parts.append(desc_cn[:60])
         else:
